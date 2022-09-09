@@ -31,9 +31,12 @@
   Patricia trees) and guarantees logarithmic-time operations.  An
   inefficient implementation of maps as functions is also provided.
 *)
+Add LoadPath "~/formal/PilkiLib".
+(* Add LoadPath "~/formal/s2sloop/from_compcert". *)
 
 Require Import Coqlibext.
 Require Import Do_notation.
+(* Require Import Axiom. *)
 Require Import ClassesAndNotations.
 
 Set Implicit Arguments.
@@ -476,6 +479,32 @@ Module PTree <: TREE(PosEqDec).
     {eqA := exteq}.
     Proof.
       unfold exteq.
+      constructor.
+      - 
+      Show Proof.
+      unfold RelationClasses.Reflexive. intros. 
+      destruct (get x0 x); auto. reflexivity.
+      (* destruct x; eauto.  *)
+      (* reflexivity. *)
+      - 
+      unfold RelationClasses.Symmetric. intros. 
+      specialize (H x0).
+      destruct (get x0 y); destruct (get x0 x); eauto. symmetry. auto.
+      (* destruct y; eauto. 
+      destruct x; eauto. 
+      rewrite H. reflexivity. *)
+      - 
+      unfold RelationClasses.Transitive. intros. 
+      specialize (H x0). specialize (H0 x0).
+      destruct (get x0 x); destruct (get x0 y); destruct (get x0 z); auto.
+      transitivity a0; auto.
+      (* destruct x; eauto.
+        * 
+        destruct y; eauto. destruct z; eauto. rewrite H. 
+        eauto.
+        *
+        destruct y; eauto.
+        
       prove_equiv; intros.
 
       destruct (get x0 x); auto. reflexivity.
@@ -485,7 +514,7 @@ Module PTree <: TREE(PosEqDec).
 
       specialize (H x0). specialize (H0 x0).
       destruct (get x0 x); destruct (get x0 y); destruct (get x0 z); auto.
-      transitivity a0; auto.
+      transitivity a0; auto. *)
     Defined.
 
 

@@ -2,8 +2,8 @@ DIRS=src extraction from_compcert
 
 INCLUDES=$(patsubst %,-I %, $(DIRS))
 
-COQLIBS:=-I ~/gitrepos/cases/src -R ~/gitrepos/cases/theories Case_Tactics\
-	-R ~/gitrepos/PilkiLib "" -R src/ "" -R from_compcert ""
+COQLIBS:=-I ~/formal/cases/src -R ~/formal/cases/theories Case_Tactics\
+	-R ~/formal/PilkiLib "" -R src/ "" -R from_compcert ""
 
 
 COQC=coqc -q $(INCLUDES) $(COQLIBS)
@@ -33,6 +33,7 @@ SRC= Libs.v Memory.v OtherMemory.v ArithClasses.v \
   PDep.v Bounds.v Instructions.v BoxedPolyhedra.v\
   PermutInstrs.v TimeStamp.v Tilling.v ExtractPoly.v Final.v\
   SimpleLanguage.v OCamlInterface.v
+# Coqlib.v Coqlibext.v Do_notation.v 
 
 EXTRACTION=extraction.v
 

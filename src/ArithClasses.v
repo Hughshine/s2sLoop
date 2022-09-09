@@ -144,7 +144,7 @@ Section WITHA.
   Lemma Amin_le1: forall a1 a2, Amin a1 a2 <= a1.
   Proof.
     intros.
-    destruct' (Ale_dec a1 a2).
+    destruct (Ale_dec a1 a2).
     Case "a1 <= a2".
       rewrite Ale_min; auto.
       apply Ale_preorder.
