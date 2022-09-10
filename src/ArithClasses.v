@@ -1,4 +1,7 @@
-Add LoadPath "../from_compcert".
+Add LoadPath "~/formal/s2sLoop/from_compcert".
+Add LoadPath "~/formal/PilkiLib".
+Add LoadPath "~/formal/s2sLoop/src".
+
 Require Import Coqlibext.
 Require Import Psatz.
 Require Import Libs.
@@ -145,10 +148,12 @@ Section WITHA.
   Proof.
     intros.
     destruct (Ale_dec a1 a2).
-    Case "a1 <= a2".
+    - 
+    (* Case "a1 <= a2". *)
       rewrite Ale_min; auto.
       apply Ale_preorder.
-    Case "a1 > a2".
+    (* Case "a1 > a2". *)
+    - 
       rewrite Agt_min; auto.
       apply Agt_le; auto.
   Qed.
@@ -160,10 +165,12 @@ Section WITHA.
   Lemma Amin_or: forall a1 a2, Amin a1 a2 = a1 \/ Amin a1 a2 = a2.
   Proof.
     intros.
-    destruct' (Ale_dec a1 a2).
-    Case "a1 <= a2".
+    destruct (Ale_dec a1 a2).
+    (* Case "a1 <= a2". *)
+    - 
       rewrite Ale_min; auto.
-    Case "a1 > a2".
+    (* Case "a1 > a2". *)
+    - 
       rewrite Agt_min; auto.
   Qed.
 
@@ -203,24 +210,28 @@ Section WITHA.
 
   Remark fold_left_Amin_le: forall l a, fold_left Amin l a <= a.
   Proof.
-    induction' l; simpl in *; intros.
+    induction l; simpl in *; intros.
 
-    Case "nil".
+    (* Case "nil". *)
+    - 
     reflexivity.
 
-    Case "cons".
+    (* Case "cons". *)
+    - 
     etransitivity; eauto. apply Amin_le1.
   Qed.
 
   Remark fold_left_Amin_le_compat: forall l a1 a2, a1 <= a2 ->
     fold_left Amin l a1 <= fold_left Amin l a2.
   Proof.
-    induction' l; simpl.
+    induction l; simpl.
 
-    Case "nil".
+    (* Case "nil". *)
+    - 
     dintuition.
 
-    Case "cons".
+    (* Case "cons". *)
+    - 
     intros * LE.
     apply IHl.
     destruct (Ale_dec a1 a); [rewrite Ale_min | rewrite Agt_min]; auto;
@@ -239,11 +250,13 @@ Section WITHA.
     apply fold_left_Amin_le.
 
     destruct l as [a l]. unfold Amin_list. simpl.
-    induction' l.
-    Case "nil".
+    induction l.
+    (* Case "nil". *)
+    - 
     constructor.
 
-    Case "cons".
+    (* Case "cons". *)
+    - 
     simpl in *. repeat constructor.
     etransitivity.
     apply fold_left_Amin_le. simpl in *. apply Amin_le2.
@@ -263,12 +276,14 @@ Section WITHA.
     unfold Amin_list. simpl.
     intro. inv H.
     revert dependent a. revert H3.
-    induction' l; intros LFA * LEQ; simpl.
+    induction l; intros LFA * LEQ; simpl.
 
-    Case "nil".
+    (* Case "nil". *)
+    - 
     assumption.
 
-    Case "cons".
+    (* Case "cons". *)
+    - 
     inv LFA.
     apply IHl; auto.
     
@@ -281,11 +296,13 @@ Section WITHA.
     destruct l as [a l].
     unfold Amin_list.
     simpl. revert a.
-    induction' l as [| a' l'].
-    Case "nil".
+    induction l as [| a' l'].
+    - 
+    (* Case "nil". *)
       simpl. intros a. auto.
 
-    Case "cons a' l'".
+    (* Case "cons a' l'". *)
+    - 
       intros a.
       simpl.
       destruct (Amin_or a a');
@@ -298,12 +315,14 @@ Section WITHA.
 
   Lemma fold_left_Amax_ge: forall l a, fold_left Amax l a >= a.
   Proof.
-    induction' l; simpl in *; intros.
+    induction l; simpl in *; intros.
 
-    Case "nil".
+    (* Case "nil". *)
+    - 
     reflexivity.
 
-    Case "cons".
+    (* Case "cons". *)
+    - 
     etransitivity; [| apply IHl].
     apply Amax_ge1.
   Qed.
@@ -311,12 +330,14 @@ Section WITHA.
   Lemma fold_left_Amax_le_compat: forall l a1 a2, a1 <= a2 ->
     fold_left Amax l a1 <= fold_left Amax l a2.
   Proof.
-    induction' l as [|a l']; simpl.
+    induction l as [|a l']; simpl.
 
-    Case "nil".
+    (* Case "nil". *)
+    - 
     dintuition.
 
-    Case "cons a l'".
+    (* Case "cons a l'". *)
+    - 
     intros * LE.
     apply IHl'.
     destruct (Ale_dec a1 a); [rewrite Ale_max | rewrite Agt_max]; auto;
@@ -337,11 +358,13 @@ Section WITHA.
     constructor.
     apply fold_left_Amax_ge.
 
-    induction' l.
-    Case "nil".
+    induction l.
+    (* Case "nil". *)
+    - 
     constructor.
 
-    Case "cons".
+    (* Case "cons". *)
+    - 
     simpl. repeat constructor.
     etransitivity; [|apply fold_left_Amax_ge].
     apply Amax_ge2.
@@ -363,12 +386,14 @@ Section WITHA.
     intro. inv H.
     revert dependent a. revert H3.
     simpl.
-    induction' l; intros LFA * LEQ; simpl.
+    induction l; intros LFA * LEQ; simpl.
 
-    Case "nil".
+    (* Case "nil". *)
+    - 
     assumption.
 
-    Case "cons".
+    (* Case "cons". *)
+    - 
     inv LFA.
     apply IHl; auto.
 
@@ -381,11 +406,13 @@ Section WITHA.
     destruct l as [a l].
     unfold Amax_list.
     simpl. revert a.
-    induction' l as [| a' l'].
-    Case "nil".
+    induction l as [| a' l'].
+    (* Case "nil". *)
+    - 
       simpl. intros a. auto.
 
-    Case "cons a' l'".
+    (* Case "cons a' l'". *)
+    - 
       intros a.
       simpl.
       destruct (Amax_or a a');
@@ -1052,13 +1079,15 @@ Proof.
   intros.
   dest_vects.
   revert dependent v1. revert dependent v2.
-  induction' n; intros.
-  Case "O".
+  induction n; intros.
+  (* Case "O". *)
+  - 
     destruct v1; inversion Lv1.
     destruct v2; inversion Lv2.
     simpl. simpl_vect. reflexivity.
 
-  Case "S".
+  (* Case "S". *)
+  - 
     destruct v1; inv Lv1.
     destruct v2; inv Lv2.
     simpl. simpl_vect. f_equal. eauto.
@@ -1068,7 +1097,7 @@ Hint Rewrite @Vprod_snoc: vect.
 Lemma PVprod_repeat_0: forall n v, 
   PVprod (repeat n 0%Z) v = 0%Z.
 Proof.
-  induction' n; intros; simpl; auto.
+  induction n; intros; simpl; auto.
   destruct v; auto.
 Qed.
 Hint Rewrite @PVprod_repeat_0: vect.
@@ -1097,14 +1126,18 @@ Program Definition Vtake_p {A} n {p} (vect: Vector A (n + p)): Vector A n:=
 Next Obligation.
   dest_vects.
   revert dependent vect.
-  induction' n as [|n']; intros.
-  Case "O".
+  induction n as [|n']; intros.
+  (* Case "O". *)
+  - 
     simpl. reflexivity.
-  Case "S n'".
-    simpl. destruct' vect.
-    SCase "nil".
+  (* Case "S n'". *)
+  - 
+    simpl. destruct vect.
+    (* SCase "nil". *)
+    * 
       inv Lvect.
-    SCase "cons".
+    (* SCase "cons". *)
+    * 
       simpl in *.
       rewrite IHn'. reflexivity.
       congruence.
@@ -1117,14 +1150,18 @@ Program Definition Vdrop_p {A} n {p} (vect: Vector A (n + p)): Vector A p:=
 Next Obligation.
   dest_vects.
   revert dependent vect.
-  induction' n as [|n']; intros.
-  Case "O".
+  induction n as [|n']; intros.
+  (* Case "O". *)
+  - 
     simpl in *. assumption.
-  Case "S n'".
-    destruct' vect.
-    SCase "nil".
+  (* Case "S n'". *)
+  - 
+    destruct vect.
+    * 
+    (* SCase "nil". *)
       inv Lvect.
-    SCase "cons".
+    (* SCase "cons". *)
+    *
       inv Lvect.
       simpl.
       eauto.
@@ -1217,15 +1254,15 @@ Qed.
   Lemma Vnth_at_val_prod A (NumA: Numerical A) dim (v:Vector A dim) n z:
     〈Vnth_at_val dim n z, v〉= z * (Vnth v n).
   Proof.
-    revert n; induction' dim as [|dim]; intros; destruct' n as [|n]; simpl; simpl_vect.
-    Case "O"; SCase "O". 
+    revert n; induction dim as [|dim]; intros; destruct n as [|n]; simpl; simpl_vect.
+    (* Case "O"; SCase "O".  *)
       dest_vects. destruct v; simpl in *; clean. simpl_vect. reflexivity.
-    Case "O"; SCase "S n".
+    (* Case "O"; SCase "S n". *)
       dest_vects. destruct v; simpl in *; clean. simpl_vect. reflexivity.
-    Case "S dim"; SCase "O".
+    (* Case "S dim"; SCase "O". *)
       rewrite <- (Vcons_hd_tail v). simpl_vect. Vdestruct v as z1 v.
       rewrite Vprod_Vcons. rewrite Vprod_V0_l. simpl_vect. reflexivity.
-    Case "S dim"; SCase "S n".
+    (* Case "S dim"; SCase "S n". *)
       Vdestruct v as z1 v. simpl_vect. auto. 
   Qed.
 
@@ -1268,13 +1305,15 @@ Proof.
   intros.
   dest_vects.
   revert dependent v1. revert dependent v1'.
-  induction' n; intros.
-  Case "O".
+  induction n; intros.
+  (* Case "O". *)
+  - 
     destruct v1; inversion Lv1.
     destruct v1'; inversion Lv1'.
     simpl. simpl_vect. reflexivity.
 
-  Case "S".
+  (* Case "S". *)
+  - 
     destruct v1; inv Lv1.
     destruct v1'; inv Lv1'.
     simpl. simpl_vect. f_equal. eauto.
@@ -1289,10 +1328,10 @@ Lemma Vnth_app_1: forall `{Inhabited A} (n p: nat) (v1: Vector A n) (v2: Vector 
 Proof.
   intros *.
   dest_vects. subst. revert i.
-  induction' v1 as [|x v1]; intros i INF.
-  Case "nil".
+  induction v1 as [|x v1]; intros i INF.
+  (* Case "nil". *)
     simpl in INF. inv INF.
-  Case "cons x v1".
+  (* Case "cons x v1". *)
     simpl.
     destruct i; auto.
     apply IHv1. simpl in *; omega.
@@ -1304,7 +1343,7 @@ Lemma Vnth_app_2: forall `{Inhabited A} (n p: nat) (v1: Vector A n) (v2: Vector 
 Proof.
   intros *.
   dest_vects. subst. unfold Vnth; simpl. 
-  induction' v1 as [|x v1]; simpl in *; auto.
+  induction v1 as [|x v1]; simpl in *; auto.
 Qed.
 
 Hint Rewrite @Vnth_app_1 using omega: vect.
@@ -1442,17 +1481,17 @@ Proof.
 
   revert dependent m.
 
-  induction' p as [|p].
+  induction p as [|p].
 
-  Case "O".
+  (* Case "O". *)
   intros; simpl. rewrite nth_vect0.
   destruct y; simpl; rewrite nth_repeat; reflexivity.
 
-  Case "S p".
+  (* Case "S p". *)
   intros. simpl.
-  destruct' y as [|y].
+  destruct y as [|y].
 
-  SCase "O".
+  (* SCase "O". *)
   destruct m as [m Lm].
   rewrite nth0_Vhd.
   symmetry.
@@ -1460,23 +1499,25 @@ Proof.
   rewrite H at 1. simpl.
   rewrite map_nth. reflexivity.
 
-  SCase "S y". simpl in IHp.
+  (* SCase "S y".  *)
+  simpl in IHp.
   rewrite <- IHp.
-  clear'.
+  clear.
   match goal with
     | |- nth _ (` ?TERM1) _ = nth _ (` ?TERM2) _ =>
       replace TERM2 with (Vtail (TERM1)) ;
-        [( fst_Case_tac "after replacement"; remember TERM1 as v)
-         | fst_Case_tac "the replacement equality"; idtac]
+        [(  remember TERM1 as v)
+         | idtac]
   end.
-
-  SSCase "after replacement".
-  clear'.
+  (* fst_Case_tac "after replacement"; *)
+  (* fst_Case_tac "the replacement equality"; *)
+  (* SSCase "after replacement". *)
+  clear.
   destruct v as [v Lv]. simpl.
   induction y; destruct v; simpl; auto.
 
-  SSCase "the replacement equality".
-  destruct m as [m Lm]; simpl. clear'. revert m.
+  (* SSCase "the replacement equality". *)
+  destruct m as [m Lm]; simpl. clear. revert m.
   induction x; destruct m; simpl; auto;
     try solve
       [unfold Vrepeat, Vtail; simpl; f_equal; apply proof_irrelevance].
@@ -1532,10 +1573,12 @@ Proof.
   unfold Vnth, Vmap. simpl.
   dest_vect v. unalias in *. simpl.
   revert dependent n. revert v.
-  induction' i as [|i]; simpl; intros * LENGTH INF.
-  Case "O".
+  induction i as [|i]; simpl; intros * LENGTH INF.
+  (* Case "O". *)
+  - 
     destruct v; simpl in *; auto. omegaContradiction.
-  Case "S i".
+  (* Case "S i". *)
+  - 
     destruct v; simpl in *; auto. omegaContradiction.
     destruct n; auto. assert (length v = n) by omega.
     eapply IHi; eauto. omega.
@@ -1573,11 +1616,11 @@ Lemma Mmul_prod_assoc: forall n m p (m1: ZMatrix n m)
   (m2: ZMatrix m p) (v: ZVector p),
   (Mmul m1 m2) × v = m1 × (m2 × v).
 Proof. 
-  induction' n as [|n].
-  Case "O".
+  induction n as [|n].
+  (* Case "O". *)
     intros. unfold Matrix in *. dest_vects.
     destruct m1; simpl in *; clean.
-  Case "S n".
+  (* Case "S n". *)
     intros.
     Vdestruct m1 as hd1 m1.
     subst.
@@ -1585,28 +1628,28 @@ Proof.
     unfold Mmul, Mmul_transp in *.
     simpl_vect in *. f_equal; auto. 
 
-    clear'.
+    clear.
     revert dependent p.
-    induction' p as [|p]; intros.
-    SCase "O".
+    induction p as [|p]; intros.
+    (* SCase "O". *)
       rewrite (Vect_0 v). unfold Vprod. simpl.
-      unfold Matrix in *. clear'.
-      dest_vects. simpl. clear'.  simpl. revert m2.
-      induction' hd1 as [|v hd1]; destruct m2; simpl; auto.
+      unfold Matrix in *. clear.
+      dest_vects. simpl. clear.  simpl. revert m2.
+      induction hd1 as [|v hd1]; destruct m2; simpl; auto.
       rewrite <- IHhd1. dest_vects. destruct v0; simpl in *; auto. lia.
-    SCase "S p".
+    (* SCase "S p". *)
       simpl.
       rewrite Vmap_cons.
       Vdestruct v as z v.
       simpl_vect. simpl.
       rewrite IHp.
-      clear'.
-      induction' m as [|m].
-      SSCase "O".
-        rewrite (Vect_0 m2). clear'.
+      clear.
+      induction m as [|m].
+      (* SSCase "O". *)
+        rewrite (Vect_0 m2). clear.
         unfold Vprod, Vmap. simpl.
         dest_vects. destruct hd1; simpl; reflexivity.
-      SSCase "S m".
+      (* SSCase "S m". *)
         Vdestruct hd1 as z1 hd1.
         Vdestruct m2 as vm2 m2.
         specialize (IHm hd1 m2).

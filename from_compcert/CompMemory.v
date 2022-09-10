@@ -25,7 +25,9 @@
 - [alloc]: allocate a fresh memory block;
 - [free]: invalidate a memory block.
 *)
-  
+Add LoadPath "~/formal/s2sLoop/from_compcert".
+Add LoadPath "~/formal/PilkiLib".
+Add LoadPath "~/formal/s2sLoop/src".
 Require Import Axioms.
 Require Import Coqlib.
 Require Import AST.
@@ -3078,4 +3080,3 @@ Hint Resolve
   Mem.valid_access_free_inv_1
   Mem.valid_access_free_inv_2
 : mem.
-

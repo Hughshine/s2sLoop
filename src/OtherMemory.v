@@ -1,3 +1,6 @@
+Add LoadPath "~/formal/s2sLoop/from_compcert".
+Add LoadPath "~/formal/PilkiLib".
+Add LoadPath "~/formal/s2sLoop/src".
 Require Import Libs.
 Require Import AST.
 Require Import Setoid.
@@ -309,11 +312,12 @@ Module FromCminorEnv(N:NUMERICAL)(CM:MEM)<:(BASEMEM(N)).
     (* write in store *)
 
     destruct H as [H | H]; inv H; mymonadInv H0; auto.
-    dest i0 == i; subst.
+    destruct (i0 == i); subst.
+    (* dest i0 == i; subst. *)
     rewrite PTree.gss; simpl_do; auto.
     rewrite PTree.gso; auto; simpl_do; rewrite_Heq_do; auto.
     
-    dest i0 == i; subst; rewrite_Heq_do; auto.
+    destruct (i0 == i); subst; rewrite_Heq_do; auto.
     rewrite PTree.gso in Heq_do1; auto; simpl_do; rewrite_Heq_do; auto.
   Qed.
 
@@ -346,7 +350,7 @@ Module FromCminorEnv(N:NUMERICAL)(CM:MEM)<:(BASEMEM(N)).
 
     (* write in store *)
     destruct H as [H | H]; inv H; mymonadInv H0; simpl in *; clean;
-    dest i0 == i; subst.
+    destruct (i0 == i); subst.
     rewrite PTree.gss; auto.
     rewrite PTree.gso; auto.
     rewrite PTree.gss in ISSOME; auto.

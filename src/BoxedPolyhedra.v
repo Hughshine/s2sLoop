@@ -1,5 +1,7 @@
 (* Boxed Polyhedra *)
-
+Add LoadPath "~/formal/s2sLoop/from_compcert".
+Add LoadPath "~/formal/PilkiLib".
+Add LoadPath "~/formal/s2sLoop/src".
 Require Import Libs.
 Require Import Errors.
 Require Import Polyhedra.
@@ -44,12 +46,12 @@ Proof.
   destruct (lt_dec n nbr_global_parameters); [|omegaContradiction].
 
   destruct (lt_dec p depth); simpl_vect; auto.
-  Case "depth <= p".
+  (* Case "depth <= p". *)
     replace p with (depth + (p - depth)) in *; [|omega]. 
     simpl_vect.
     remember (p-depth) as p' in *. clear Heqp'.
     destruct (lt_eq_lt_dec p' n) as [[|]|]; try omegaContradiction; simpl_vect; auto.
-    SCase "n < p".
+    (* SCase "n < p". *)
       replace p' with (n + S (p' - n - 1)) by omega.
       simpl_vect; auto.
 Qed.
@@ -65,7 +67,7 @@ Proof.
   clear INF l.
   remember (nbr_global_parameters - S n) as m. clear Heqm.
   unfold_vect. simpl.
-  induction' n as [|n]; auto.
+  induction n as [|n]; auto.
 Qed.
 
 
@@ -107,15 +109,15 @@ Proof.
 
   clear INF.
   revert dependent v'.
-  induction' n as [|n']; simpl in *; intros.
-  Case "O".
+  induction n as [|n']; simpl in *; intros.
+  (* Case "O". *)
     destruct v'.
     simpl in *; omega.
     rewrite PVprod_repeat_0. 
     simpl.
     destruct z; omega.
 
-  Case "S n'".
+  (* Case "S n'". *)
     destruct v'.
     simpl in *; omega.
     simpl. apply IHn'; auto.
@@ -144,13 +146,13 @@ Proof.
   remember ((nbr_global_parameters - S n)%nat) as m. clear Heqm. subst.
 
   revert dependent v'.
-  induction' n as [|n]; intros.
-  Case "O".
+  induction n as [|n]; intros.
+  (* Case "O". *)
     simpl in *.
     destruct v'; simpl in *; auto.
     rewrite PVprod_repeat_0. destruct z; omega.
 
-  Case "S n".
+  (* Case "S n". *)
     simpl.
     destruct v'; simpl in *; auto.
     apply IHn. omega.
@@ -193,16 +195,17 @@ Lemma map_sequence_lesser_forall_1: forall B (f: nat -> B) P n,
   forall m, m < n -> P (f m).
 Proof.
   intros *.
-  induction' n as [|n]; intros.
-  Case "O".
+  induction n as [|n]; intros.
+  (* Case "O". *)
     omegaContradiction.
 
-  Case "S n".
+  (* Case "S n". *)
   simpl in *. inv H.
-  dest m == n.
-    SCase "m = n".
+  destruct (m == n).
+  (* dest m == n. *)
+    (* SCase "m = n". *)
     subst. auto.
-    SCase "m <> n".
+    (* SCase "m <> n". *)
     apply IHn; auto. omega.
 Qed.
 
@@ -211,11 +214,11 @@ Lemma map_sequence_lesser_forall_2: forall B (f: nat -> B) (P: B -> Prop) n,
   list_forall P (map f (sequence_lesser n)).
 Proof.
   intros *.
-  induction' n as [|n]; intros FORALL.
-  Case "O".
+  induction n as [|n]; intros FORALL.
+  (* Case "O". *)
     simpl. constructor.
 
-  Case "S n".
+  (* Case "S n". *)
   simpl. constructor.
   apply FORALL. omega.
   apply IHn. intros. apply FORALL. omega.

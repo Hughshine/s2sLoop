@@ -1,4 +1,6 @@
-Add LoadPath "../from_compcert".
+Add LoadPath "~/formal/s2sLoop/from_compcert".
+Add LoadPath "~/formal/PilkiLib".
+Add LoadPath "~/formal/s2sLoop/src".
 Require Import Libs.
 Require Import Errors.
 Require Import Polyhedra.
@@ -120,30 +122,30 @@ Module Permut (Import M:BASEMEM(ZNum))
     end.
     inv IS as [mem2'].
     exists mem2'. clean.
-    split'.
-    Case "left".
+    split.
+    (* Case "left". *)
       match goal with
         | H: write mem1 ?cid ?V = Some _ |- _ =>
           remember_no_eq cid as ciw;
           remember_no_eq V as v
       end.      
       rewrite EqA_memory_unfold.
-      split'.
-      SCase "left".
+      split.
+      (* SCase "left". *)
         apply write_keep_layout in H3. eauto with memory.
-      SCase "right".
+      (* SCase "right". *)
         intros.
-        dest ci == ciw; subst.
-        SSCase "ci = ciw".
+        destruct (ci == ciw); subst.
+        (* SSCase "ci = ciw". *)
           pose proof (rws _ _ ciw v H) as RWS.
           unfold read_write in RWS.
           rewrite H3 in RWS. rewrite H4 in RWS. simpl_do in *. assumption.
-        SSCase "ci <> ciw".
+        (* SSCase "ci <> ciw". *)
           eapply rwo in H4; eauto.
           eapply rwo in H3; eauto.
           assert (read mem1 ci = read mem1' ci) by auto with memory.
           congruence.
-     Case "right".
+     (* Case "right". *)
        econstructor; eauto.
        erewrite mmap_ext; [eauto|]. eauto with memory.
   Qed.
@@ -167,10 +169,10 @@ Module Permut (Import M:BASEMEM(ZNum))
       exists mem2', mem2' ≡ mem2 /\
         ip2ts_list_semantics ip2tsl mem1' mem2'.
   Proof.
-    induction' ip2tsl as [|ip2ts ip2tsl].
-    Case "nil".
+    induction ip2tsl as [|ip2ts ip2tsl].
+    (* Case "nil". *)
       intros. inv H. exists mem1'; split; auto. constructor.
-    Case "cons ip2ts ip2tsl".
+    (* Case "cons ip2ts ip2tsl". *)
       intros * SEM * EQ.
       inv SEM.
       edestruct ip2ts_semantics_equiv as [mem3' [? ?]]; eauto.
@@ -188,7 +190,7 @@ Module Permut (Import M:BASEMEM(ZNum))
     exists mem2',(mem2' ≡ mem2 /\
       ip2ts_list_semantics (ip2ts::ip2tsl) mem1' mem2').
   Proof.
-     induction' ip2tsl as [|ip2ts' ip2tsl]; intros FORALL * SEM * EQUIV; simpl in *.
+     induction ip2tsl as [|ip2ts' ip2tsl]; intros FORALL * SEM * EQUIV; simpl in *.
      Case "nil".
        inv SEM. inv H4.
        edestruct instruction_point_semantics_equiv as [mem2' [? ?]]; eauto.
@@ -214,12 +216,12 @@ Module Permut (Import M:BASEMEM(ZNum))
     exists mem2',(mem2' ≡ mem2 /\
       ip2ts_list_semantics (ip2tsl ++ [ip2ts]) mem1' mem2').
   Proof.
-     induction' ip2tsl as [|ip2ts' ip2tsl]; intros FORALL * SEM * EQUIV; simpl in *.
-     Case "nil".
+     induction ip2tsl as [|ip2ts' ip2tsl]; intros FORALL * SEM * EQUIV; simpl in *.
+     (* Case "nil". *)
        inv SEM. inv H4.
        edestruct instruction_point_semantics_equiv as [mem2' [? ?]]; eauto.
        exists mem2'; split; auto. econstructor; eauto. constructor.
-     Case "cons ip2ts' ip2tsl".
+     (* Case "cons ip2ts' ip2tsl". *)
        inv FORALL.
        inv SEM.
        inv H6. unfold ip2ts_permutable in H1.
@@ -228,10 +230,10 @@ Module Permut (Import M:BASEMEM(ZNum))
        assert (ip2ts_list_semantics (ip2ts :: ip2tsl) mem3' mem2').
          econstructor; eauto.
        edestruct IHip2tsl as [mem2'' [? ?]]. eauto. eauto. reflexivity.
-       exists mem2''; split'.
-       SCase "left".
+       exists mem2''; split.
+       (* SCase "left". *)
          etransitivity; eauto.
-       SCase "right".
+       (* SCase "right". *)
          econstructor; eauto.
   Qed.
 
@@ -253,10 +255,10 @@ Module Permut (Import M:BASEMEM(ZNum))
       ( ip2ts_list_semantics ipl1 mem1 mem2 /\
         ip2ts_list_semantics ipl2 mem2 mem3).
   Proof.
-    induction' ipl1 as [|ip1 ipl1]; intros; simpl in *.
-    Case "nil".
+    induction ipl1 as [|ip1 ipl1]; intros; simpl in *.
+    (* Case "nil". *)
       exists mem1; split; auto. constructor.
-    Case "cons ip1 ipl1".
+    (* Case "cons ip1 ipl1". *)
       inv H.
       edestruct IHipl1 as [mem2' [? ?]]; eauto.
       exists mem2'; split; eauto.
@@ -299,21 +301,21 @@ Module Permut (Import M:BASEMEM(ZNum))
         ip2ts_list_semantics ipl2 mem1' mem2').
   Proof.
     revert ipl2.
-    induction' ipl1 as [|ip1 ipl1]; 
+    induction ipl1 as [|ip1 ipl1]; 
       intros * PERM SORTED1 SORTED2 SWAP * SEM * EQ.
-    Case "nil".
+    (* Case "nil". *)
       inv SEM. clean.
       exists mem1'; split; auto. constructor.
-    Case "cons ip1 ipl1".
+    (* Case "cons ip1 ipl1". *)
       edestruct Permutation_cons_exists as [ipl21 [ipl22 [? PERM']]]; eauto. subst.
       inv SEM as [|? ? ? ? ? SEMI SEML].
       edestruct ip2ts_semantics_equiv as [mem3' [? ?]]; eauto.
 
       edestruct IHipl1 as [mem2' [? ?]]; eauto.
-      SCase "Sorted ipl1".
+      (* SCase "Sorted ipl1". *)
         inv SORTED1; auto.
-      SCase "Sorted ipl21 ++ ipl22".
-        clear' - SORTED2.
+      (* SCase "Sorted ipl21 ++ ipl22". *)
+        clear - SORTED2.
         apply StronglySorted_Sorted.
         apply Sorted_StronglySorted in SORTED2;[|
           unfold Relations_1.Transitive; unfold compare_IP2TS_2;
@@ -322,11 +324,11 @@ Module Permut (Import M:BASEMEM(ZNum))
         induction ipl21; simpl in *; intro.
         inv SORTED2; auto.
         inv SORTED2; econstructor; eauto.
-        clear'- H2. induction ipl21; simpl in *; inv H2; auto.
+        clear- H2. induction ipl21; simpl in *; inv H2; auto.
           
-      SCase "Permutable".
+      (* SCase "Permutable". *)
         intros. apply SWAP; auto. right; assumption.
-        apply in_app_or in H2. apply in_or_app. destruct' H2; auto.
+        apply in_app_or in H2. apply in_or_app. destruct H2; auto.
         right; right. auto.
 
       edestruct ip2ts_list_semantics_app as [mem4 [? ?]]; eauto.
@@ -342,40 +344,40 @@ Module Permut (Import M:BASEMEM(ZNum))
 
 
 
-      assert' (exists mem4',(
+      assert (exists mem4',(
         mem4' ≡ mem4 /\
         ip2ts_list_semantics (ipl21++[ip1]) mem1' mem4')) as MEM4'.
-      SCase "Assert: MEM4'".
+      (* SCase "Assert: MEM4'". *)
         eapply first_go_last; eauto.
-        SSCase "Forall permutable".
+        (* SSCase "Forall permutable". *)
           apply forall_list_forall.
           intros ip IN.
           apply SWAP; auto.
-          S3Case "In1".
+          (* S3Case "In1". *)
             left; auto.
-          S3Case "In2".
+          (* S3Case "In2". *)
             apply in_or_app. auto.
-          S3Case "compare1".
+          (* S3Case "compare1". *)
             apply Sorted_StronglySorted in SORTED1. inv SORTED1.
             rewrite Forall_forall in H9. apply H9. eapply Permutation_in. symmetry; eauto.
             apply in_or_app. auto.
             unfold Relations_1.Transitive; unfold compare_IP2TS_1; intros; etransitivity; eauto.
-          S3Case "compare2".
-            clear' - SORTED2 IN.
+          (* S3Case "compare2". *)
+            clear - SORTED2 IN.
             apply Sorted_StronglySorted in SORTED2.
             revert SORTED2 IN.
-            induction' ipl21 as [|ip21 ipl21]; intros; clean.
-            simpl in *. destruct' IN.
-            S5Case "ip21 = ip".
+            induction ipl21 as [|ip21 ipl21]; intros; clean.
+            simpl in *. destruct IN.
+            (* S5Case "ip21 = ip". *)
               subst.
               inv SORTED2.
               rewrite Forall_forall in H2. apply H2.
-                clear'; induction ipl21; simpl; auto.
-            S5Case "In ip ipl21".
+                clear; induction ipl21; simpl; auto.
+            (* S5Case "In ip ipl21". *)
               inv SORTED2; eauto.
             unfold Relations_1.Transitive, compare_IP2TS_2; intros; etransitivity; eauto.
         reflexivity.
-    End_of_assert MEM4'.
+    (* End_of_assert MEM4'. *)
       destruct MEM4' as [mem4' [? ?]].
       edestruct (ip2ts_list_semantics_equiv ipl22) as [mem2'' [? ?]]; eauto.
       exists mem2''; split. etransitivity; eauto.
@@ -401,26 +403,26 @@ Module Permut (Import M:BASEMEM(ZNum))
       intros * WW W1R2 W2R1.
       unfold ip2ts_permutable.
       intros * SEM12 SEM23 * EQ.
-      assert' (same_memory_layout mem1 mem2) as SMT12.
-      Case "Assert: SMT12".
+      assert (same_memory_layout mem1 mem2) as SMT12.
+      (* Case "Assert: SMT12". *)
         inv SEM12. eapply write_keep_layout; eauto.
-      End_of_assert SMT12.
-      assert' (same_memory_layout mem2 mem3) as SMT23.
-      Case "Assert: SMT23".
+      (* End_of_assert SMT12. *)
+      assert (same_memory_layout mem2 mem3) as SMT23.
+      (* Case "Assert: SMT23". *)
         inv SEM23. eapply write_keep_layout; eauto.
-      End_of_assert SMT23.
-      assert' (forall ci, ci <> wloc1 ->
+      (* End_of_assert SMT23. *)
+      assert (forall ci, ci <> wloc1 ->
         read mem2 ci = read mem1 ci) as SAMEREAD12.
-      Case "Assert: SAMEREAD12".
+      (* Case "Assert: SAMEREAD12". *)
         intros.
         inv SEM12. eapply rwo; eauto.
-      End_of_assert SAMEREAD12.
-      assert' (forall ci, ci <> wloc2 ->
+      (* End_of_assert SAMEREAD12. *)
+      assert (forall ci, ci <> wloc2 ->
         read mem3 ci = read mem2 ci) as SAMEREAD23.
-      Case "Assert: SAMEREAD23".
+      (* Case "Assert: SAMEREAD23". *)
         intros.
         inv SEM23. eapply rwo; eauto.
-      End_of_assert SAMEREAD23.
+      (* End_of_assert SAMEREAD23. *)
       rewrite EqA_memory_unfold in EQ. destruct EQ as [SMT11' SAMEREAD11'].
       inv SEM12; inv SEM23.
       unfold ip_of_ip2ts_1 in *. simpl in *.
@@ -431,22 +433,22 @@ Module Permut (Import M:BASEMEM(ZNum))
                | H : _ |- _ => progress (fold wloc2 in H)
              end.
 
-      assert' (is_some (write mem1' wloc2 wval0)) as ISSOME1.
-      Case "Assert: ISSOME1".
+      assert (is_some (write mem1' wloc2 wval0)) as ISSOME1.
+      (* Case "Assert: ISSOME1". *)
         apply (write_same_layout mem2).
           transitivity mem1; symmetry; assumption.
           rewrite H7. auto.
-      End_of_assert ISSOME1.
+      (* End_of_assert ISSOME1. *)
       inv ISSOME1 as [mem2' EQMEM2'].
       exists mem2'.
-      assert' (is_some (write mem2' wloc1 wval)) as ISSOME2.
-      Case "Assert: ISSOME2".
+      assert (is_some (write mem2' wloc1 wval)) as ISSOME2.
+      (* Case "Assert: ISSOME2". *)
         apply (write_same_layout mem1).
           transitivity mem1'; auto.
             symmetry; assumption.
             eapply write_keep_layout; eauto.
             rewrite H4; auto.
-      End_of_assert ISSOME2.
+      (* End_of_assert ISSOME2. *)
       inv ISSOME2 as [mem3' EQMEM3'].
       assert (forall ci, ci <> wloc2 ->
         read mem2' ci = read mem1' ci) as SAMEREAD1'2' by
@@ -454,40 +456,43 @@ Module Permut (Import M:BASEMEM(ZNum))
       assert (forall ci, ci <> wloc1 ->
         read mem3' ci = read mem2' ci) as SAMEREAD2'3' by
         (intros; eapply rwo; eauto).
-      exists mem3'.
-      split; [Case "EQUIV"| split; [Case "sem ip2"|Case "sem ip1"]].
-      Case "EQUIV".
+      exists mem3'. 
+      split. 
+      (* split; [Case "EQUIV"| split; [Case "sem ip2"|Case "sem ip1"]]. *)
+      (* Case "EQUIV". *)
         rewrite EqA_memory_unfold.
-        split'.
-        SCase "left".
+        split.
+        (* SCase "left". *)
           transitivity mem2'. symmetry; eapply write_keep_layout; eauto.
           transitivity mem1'. symmetry; eapply write_keep_layout; eauto.
           eauto with memory.
-        SCase "right".
+        (* SCase "right". *)
           intro ci.
-          dest ci == wloc2.
-          SSCase "ci = wloc2".
+          destruct (ci == wloc2).
+          (* dest ci == wloc2. *)
+          (* SSCase "ci = wloc2". *)
             subst.
             rewrite SAMEREAD2'3'; auto.
             assert (same_memory_layout mem1' mem2) as SMT1'2 by eauto with memory.
             pose proof (rws mem1' mem2 wloc2 wval0 SMT1'2) as RWS1'2.
             unfold read_write in RWS1'2. rewrite <- EQMEM2' in RWS1'2.
             rewrite H7 in RWS1'2. simpl_do in RWS1'2. assumption.
-          SSCase "ci <> wloc2".
+          (* SSCase "ci <> wloc2". *)
             rewrite SAMEREAD23; auto.
-            dest ci == wloc1.
-            S3Case "ci = wloc1".
+            (* dest ci == wloc1. *)
+            destruct (ci == wloc1).
+            (* S3Case "ci = wloc1". *)
               clean.
               assert (same_memory_layout mem2' mem1) as SMT2'1 by
                 (transitivity mem1'; [symmetry; eapply write_keep_layout; eauto| assumption]).
               pose proof (rws mem2' mem1 wloc1 wval SMT2'1) as RWS2'1.
               unfold read_write in RWS2'1. rewrite EQMEM3' in RWS2'1.
               rewrite H4 in RWS2'1. simpl_do in *. assumption.
-            S3Case "ci <> wloc1".
+            (* S3Case "ci <> wloc1". *)
               rewrite SAMEREAD2'3'; auto. rewrite SAMEREAD1'2'; auto.
               rewrite SAMEREAD12; auto.
-      Case "sem ip2".
-        unfold ip2ts_semantics.
+      (* Case "sem ip2". *)
+        unfold ip2ts_semantics. split.
         
         econstructor; eauto. rewrite <- H3.
         unfold ip_of_ip2ts_1; simpl. fold tloc2.
@@ -496,16 +501,16 @@ Module Permut (Import M:BASEMEM(ZNum))
           read mem1' ci = read mem2 ci) as SAMEREAD21'
         by (intros; transitivity (read mem1 ci); eauto; symmetry; eauto).
         remember_no_eq (I.read_locs (ip2.(ip2_instruction))) as rlocs2.
-        clear' - W1R2 SAMEREAD21'.
-        induction' rlocs2 as [| rloc2 rlocs2]; intros; simpl in *; auto.
-        SCase "cons rloc2 rlocs2".
+        clear - W1R2 SAMEREAD21'.
+        induction rlocs2 as [| rloc2 rlocs2]; intros; simpl in *; auto.
+        (* SCase "cons rloc2 rlocs2". *)
           inv W1R2. specialize (IHrlocs2 H2). rewrite IHrlocs2.
           match goal with
             | |- 
               (do _ <- ?X ; _) = (do _ <- ?Y; _) =>
                 assert (X = Y) as EQ; [auto|rewrite EQ; reflexivity]
           end.
-      Case "sem ip1".
+      (* Case "sem ip1". *)
         unfold ip2ts_semantics.
         
         econstructor; eauto. rewrite <- H1.
@@ -515,9 +520,9 @@ Module Permut (Import M:BASEMEM(ZNum))
           read mem2' ci = read mem1 ci) as SAMEREAD2'1 by
           (intros; transitivity (read mem1' ci); eauto).
         remember_no_eq (I.read_locs (ip1.(ip2_instruction))) as rlocs1.
-        clear' - W2R1 SAMEREAD2'1.
-        induction' rlocs1 as [| rloc1 rlocs1]; intros; simpl in *; auto.
-        SCase "cons rloc1 rlocs1".
+        clear - W2R1 SAMEREAD2'1.
+        induction rlocs1 as [| rloc1 rlocs1]; intros; simpl in *; auto.
+        (* SCase "cons rloc1 rlocs1". *)
           inv W2R1. specialize (IHrlocs1 H2). rewrite IHrlocs1.
           match goal with
             | |- 
@@ -666,9 +671,9 @@ Module Permut (Import M:BASEMEM(ZNum))
     repeat (
       match goal with
         | |- _ <-> _ =>
-          split'
+          split
         | |- _ /\ _ =>
-          split'
+          split
         | H : _ /\ _ |- _ =>
           destruct H
         | H : _ <-> _ |- _ =>
@@ -745,7 +750,7 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
       Exists (fun p => (v1 +++ v2) ∈ p) (make_poly_lt0_l sched1 (V0 dim2) pol).
   Proof.
     revert pol.
-    induction' sched1 as [|vs sched1]; simpl; intros *;
+    induction sched1 as [|vs sched1]; simpl; intros *;
       solve_simpl_goal.
 
     constructor. lia.
@@ -771,7 +776,7 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
       Exists (fun p => (v1 +++ v2) ∈ p) (make_poly_lt0_r (V0 dim1) sched2 pol).
   Proof.
     revert pol.
-    induction' sched2 as [|vs sched2]; simpl; intros *;
+    induction sched2 as [|vs sched2]; simpl; intros *;
       solve_simpl_goal.
 
     constructor. lia.
@@ -798,7 +803,7 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
       Exists (fun p => (v1 +++ v2) ∈ p) (make_poly_gt0_r (V0 dim1) sched2 pol).
   Proof.
     revert pol.
-    induction' sched2 as [|vs sched2]; simpl; intros *; solve_simpl_goal.
+    induction sched2 as [|vs sched2]; simpl; intros *; solve_simpl_goal.
     constructor. lia.
   Qed.
 
@@ -823,7 +828,7 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
       Exists (fun p => (v1 +++ v2) ∈ p) (make_poly_gt0_l sched1 (V0 dim2) pol).
   Proof.
     revert pol.
-    induction' sched1 as [|vs sched1]; simpl; intros *; solve_simpl_goal.
+    induction sched1 as [|vs sched1]; simpl; intros *; solve_simpl_goal.
     constructor. lia.
   Qed.
 
@@ -853,49 +858,49 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
       Exists (fun p => (v1 +++ v2) ∈ p) (make_poly_lt sched1 sched2 pol).
   Proof.
     revert sched2 pol.
-    induction' sched1 as [|vs1 sched1]; intros *;
-      destruct' sched2 as [|vs2 sched2];
-      split'; first [intros [IN TSL]||intro EX].
-    Case "nil"; SCase "nil"; SSCase "->".
+    induction sched1 as [|vs1 sched1]; intros *;
+      destruct sched2 as [|vs2 sched2];
+      split; first [intros [IN TSL]||intro EX].
+    (* Case "nil"; SCase "nil"; SSCase "->". *)
       inv TSL; inv H.
-    Case "nil"; SCase "nil"; SSCase "<-".
+    (* Case "nil"; SCase "nil"; SSCase "<-". *)
       inv EX.
-    Case "nil"; SCase "cons vs2 sched2"; SSCase "->".
+    (* Case "nil"; SCase "cons vs2 sched2"; SSCase "->". *)
       unfold make_poly_lt. rewrite <- make_poly_gt0_r_correct.
       inv TSL. split; auto.
-    Case "nil"; SCase "cons vs2 sched2"; SSCase "<-".
+    (* Case "nil"; SCase "cons vs2 sched2"; SSCase "<-". *)
       unfold make_poly_lt in EX. rewrite <- make_poly_gt0_r_correct in EX.
       destruct EX; split; auto.
-    Case "cons vs1 sched1"; SCase "nil"; SSCase "->".
+    (* Case "cons vs1 sched1"; SCase "nil"; SSCase "->". *)
       unfold make_poly_lt. rewrite <- make_poly_lt0_l_correct.
       inv TSL. split; auto.
-    Case "cons vs1 sched1"; SCase "nil"; SSCase "<-". 
+    (* Case "cons vs1 sched1"; SCase "nil"; SSCase "<-".  *)
       unfold make_poly_lt in EX. rewrite <- make_poly_lt0_l_correct in EX.
       destruct EX; split; auto.
-    Case "cons vs1 sched1"; SCase "cons vs2 sched2"; SSCase "->".
+    (* Case "cons vs1 sched1"; SCase "cons vs2 sched2"; SSCase "->". *)
       inv TSL.
-      S3Case "<".
+      (* S3Case "<". *)
         simpl. constructor. constructor; auto. red; simpl. simpl_vect.
         simpl in *. unfold ZNum.Numerical_Num in *. lia.
-      S3Case "=".
+      (* S3Case "=". *)
         simpl. constructor 2. rewrite <- IHsched1.
-        split'; auto.
-        S4Case "left".
+        split; auto.
+        (* S4Case "left". *)
           constructor; auto.
           red; simpl. simpl_vect. simpl in *.  unfold ZNum.Numerical_Num in *. lia.
-    Case "cons vs1 sched1"; SCase "cons vs2 sched2"; SSCase "<-".
-      inv' EX.
-      S3Case "Exists_cons_hd".
+    (* Case "cons vs1 sched1"; SCase "cons vs2 sched2"; SSCase "<-". *)
+      inv EX.
+      (* S3Case "Exists_cons_hd". *)
         inv H0. red in H2; simpl in H2. simpl_vect in H2. simpl in H2.
-        split'; auto.
-        S4Case "right".
+        split; auto.
+        (* S4Case "right". *)
           simpl. constructor; auto.
           unfold ZNum.Numerical_Num in *. lia.
-      S3Case "Exists_cons_tl".
+      (* S3Case "Exists_cons_tl". *)
         rewrite <- IHsched1 in H0. destruct H0.
         inv H. red in H3; simpl in H3; simpl_vect in H3; simpl in H3.
-        split'; auto.
-        S4Case "right".
+        split; auto.
+        (* S4Case "right". *)
         simpl.
         unfold ZNum.Numerical_Num in *.
         replace (〈vs1, v1〉) with (〈vs2, v2〉).
@@ -928,49 +933,49 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
       Exists (fun p => (v1 +++ v2) ∈ p) (make_poly_gt sched1 sched2 pol).
   Proof.
     revert sched2 pol.
-    induction' sched1 as [|vs1 sched1]; intros *;
-      destruct' sched2 as [|vs2 sched2];
-      split'; first [intros [IN TSL]||intro EX].
-    Case "nil"; SCase "nil"; SSCase "->".
+    induction sched1 as [|vs1 sched1]; intros *;
+      destruct sched2 as [|vs2 sched2];
+      split; first [intros [IN TSL]||intro EX].
+    (* Case "nil"; SCase "nil"; SSCase "->". *)
       inv TSL; inv H.
-    Case "nil"; SCase "nil"; SSCase "<-".
+    (* Case "nil"; SCase "nil"; SSCase "<-". *)
       inv EX.
-    Case "nil"; SCase "cons vs2 sched2"; SSCase "->".
+    (* Case "nil"; SCase "cons vs2 sched2"; SSCase "->". *)
       unfold make_poly_gt. rewrite <- make_poly_lt0_r_correct.
       inv TSL. split; auto.
-    Case "nil"; SCase "cons vs2 sched2"; SSCase "<-".
+    (* Case "nil"; SCase "cons vs2 sched2"; SSCase "<-". *)
       unfold make_poly_gt in EX. rewrite <- make_poly_lt0_r_correct in EX.
       destruct EX; split; auto.
-    Case "cons vs1 sched1"; SCase "nil"; SSCase "->".
+    (* Case "cons vs1 sched1"; SCase "nil"; SSCase "->". *)
       unfold make_poly_gt. rewrite <- make_poly_gt0_l_correct.
       inv TSL. split; auto.
-    Case "cons vs1 sched1"; SCase "nil"; SSCase "<-". 
+    (* Case "cons vs1 sched1"; SCase "nil"; SSCase "<-".  *)
       unfold make_poly_gt in EX. rewrite <- make_poly_gt0_l_correct in EX.
       destruct EX; split; auto.
-    Case "cons vs1 sched1"; SCase "cons vs2 sched2"; SSCase "->".
+    (* Case "cons vs1 sched1"; SCase "cons vs2 sched2"; SSCase "->". *)
       inv TSL.
-      S3Case "<".
+      (* S3Case "<". *)
         simpl. constructor. constructor; auto. red; simpl. simpl_vect.
         simpl in *. unfold ZNum.Numerical_Num in *. lia.
-      S3Case "=".
+      (* S3Case "=". *)
         simpl. constructor 2. rewrite <- IHsched1.
-        split'; auto.
-        S4Case "left".
+        split; auto.
+        (* S4Case "left". *)
           constructor; auto.
           red; simpl. simpl_vect. simpl in *.  unfold ZNum.Numerical_Num in *. lia.
-    Case "cons vs1 sched1"; SCase "cons vs2 sched2"; SSCase "<-".
-      inv' EX.
-      S3Case "Exists_cons_hd".
+    (* Case "cons vs1 sched1"; SCase "cons vs2 sched2"; SSCase "<-". *)
+      inv EX.
+      (* S3Case "Exists_cons_hd". *)
         inv H0. red in H2; simpl in H2. simpl_vect in H2. simpl in H2.
-        split'; auto.
-        S4Case "right".
+        split; auto.
+        (* S4Case "right". *)
           simpl. constructor; auto.
           unfold ZNum.Numerical_Num in *. lia.
-      S3Case "Exists_cons_tl".
+      (* S3Case "Exists_cons_tl". *)
         rewrite <- IHsched1 in H0. destruct H0.
         inv H. red in H3; simpl in H3; simpl_vect in H3; simpl in H3.
-        split'; auto.
-        S4Case "right".
+        split; auto.
+        (* S4Case "right". *)
         simpl.
         unfold ZNum.Numerical_Num in *.
         replace (〈vs1, v1〉) with (〈vs2, v2〉).
@@ -998,17 +1003,17 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
       ((v1 +++ v2) ∈ pol /\ time_stamp_all_0 (map (fun vs1 => 〈vs1, v1〉) sched1)) <->
       (v1 +++ v2) ∈ (make_poly_all0_l sched1 (V0 dim2) pol).
   Proof.
-    induction' sched1 as [|vs1 sched1];[|destruct IHsched1]; intros *; split';
+    induction sched1 as [|vs1 sched1];[|destruct IHsched1]; intros *; split;
       first [intros [IN ALL0]|| intros INMK]; auto.
-    Case "nil"; SCase "<-".
+    (* Case "nil"; SCase "<-". *)
       simpl in INMK. split; auto.
       simpl. constructor.
-    Case "cons vs1 sched1"; SCase "->".
+    (* Case "cons vs1 sched1"; SCase "->". *)
       simpl in ALL0. inv ALL0. simpl in *.
       simpl. constructor; auto.
         red. simpl. simpl_vect. simpl. lia.
         apply H. split; auto.
-    Case "cons vs1 sched1"; SCase "<-".
+    (* Case "cons vs1 sched1"; SCase "<-". *)
       inv INMK.
       specialize (H0 H4). destruct H0.
       split; auto.
@@ -1037,18 +1042,18 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
       ((v1 +++ v2) ∈ pol /\ time_stamp_all_0 (map (fun vs2 => 〈vs2, v2〉) sched2)) <->
       (v1 +++ v2) ∈ (make_poly_all0_r (V0 dim1) sched2 pol).
   Proof.
-    induction' sched2 as [|vs2 sched2];[|destruct IHsched2]; intros *; split';
+    induction sched2 as [|vs2 sched2];[|destruct IHsched2]; intros *; split;
       first [intros [IN ALL0]|| intros INMK]; auto.
-    Case "nil"; SCase "<-".
+    (* Case "nil"; SCase "<-". *)
       simpl in INMK. split; auto.
       simpl. constructor.
-    Case "cons vs2 sched2"; SCase "->".
+    (* Case "cons vs2 sched2"; SCase "->". *)
       simpl in ALL0. inv ALL0. simpl in *.
       simpl. constructor; auto.
         red. simpl. simpl_vect. simpl.
         simpl in *. unfold ZNum.Numerical_Num in *. lia.
         apply H. split; auto.
-    Case "cons vs2 sched2"; SCase "<-".
+    (* Case "cons vs2 sched2"; SCase "<-". *)
       inv INMK.
       specialize (H0 H4). destruct H0.
       split; auto.
@@ -1081,30 +1086,30 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
       (v1 +++ v2) ∈ (make_poly_eq sched1 sched2 pol).
   Proof.
     revert sched2.
-    induction' sched1 as [|vs1 sched1]; intros *;
-      destruct' sched2 as [|vs2 sched2];
-        split'; first [intros [IN TSL]||intro EX]; auto.
-    Case "nil"; SCase "nil"; SSCase "<-".
+    induction sched1 as [|vs1 sched1]; intros *;
+      destruct sched2 as [|vs2 sched2];
+        split; first [intros [IN TSL]||intro EX]; auto.
+    (* Case "nil"; SCase "nil"; SSCase "<-". *)
       simpl in *; split; auto. constructor. constructor.
-    Case "nil"; SCase "cons vs2 sched2"; SSCase "->".
+    (* Case "nil"; SCase "cons vs2 sched2"; SSCase "->". *)
       unfold make_poly_eq. rewrite <- make_poly_all0_r_correct.
       inv TSL. split; auto.
-    Case "nil"; SCase "cons vs2 sched2"; SSCase "<-". 
+    (* Case "nil"; SCase "cons vs2 sched2"; SSCase "<-".  *)
       unfold make_poly_eq in EX. rewrite <- make_poly_all0_r_correct in EX.
       inv EX; split; simpl; auto.
-    Case "cons vs1 sched1"; SCase "nil"; SSCase "->".
+    (* Case "cons vs1 sched1"; SCase "nil"; SSCase "->". *)
       unfold make_poly_eq. rewrite <- make_poly_all0_l_correct.
       inv TSL. split; auto.
-    Case "cons vs1 sched1"; SCase "nil"; SSCase "<-". 
+    (* Case "cons vs1 sched1"; SCase "nil"; SSCase "<-".  *)
       unfold make_poly_eq in EX. rewrite <- make_poly_all0_l_correct in EX.
       inv EX; split; simpl; auto.
-    Case "cons vs1 sched1"; SCase "cons vs2 sched2"; SSCase "->".
+    (* Case "cons vs1 sched1"; SCase "cons vs2 sched2"; SSCase "->". *)
       simpl in TSL. inv TSL.
       simpl. constructor; auto.
       red. simpl. simpl_vect. simpl in *. unfold ZNum.Numerical_Num in *; lia.
       unfold Pol_In in *; rewrite <- IHsched1.
       split; auto.
-    Case "cons vs1 sched1"; SCase "cons vs2 sched2"; SSCase "<-".
+    (* Case "cons vs1 sched1"; SCase "cons vs2 sched2"; SSCase "<-". *)
       simpl in EX. inv EX. red in H1; simpl in H1; simpl_vect in H1; simpl in H1.
       specialize (IHsched1 sched2).
       destruct IHsched1.
@@ -1132,16 +1137,16 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
       Exists (fun p => (v1 +++ v2) ∈ p) (make_poly_le sched1 sched2 pol).
   Proof.
     intros.
-    split'.
-    Case "->".
+    split.
+    (* Case "->". *)
       intros [IN TLE].
       unfold time_stamp_le in TLE. unfold make_poly_le.
       destruct TLE.
-      SCase "TLT".
+      (* SCase "TLT". *)
       apply Exists_cons_tl. apply make_poly_lt_correct. split; auto.
-      SCase "TEQ".
+      (* SCase "TEQ". *)
       apply Exists_cons_hd; apply make_poly_eq_correct. split; auto.
-    Case "<-".
+    (* Case "<-". *)
       intros. inv H.
       rewrite <- make_poly_eq_correct in H1. destruct H1.
       split; auto.
@@ -1164,16 +1169,16 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
       Exists (fun p => (v1 +++ v2) ∈ p) (make_poly_ge sched1 sched2 pol).
   Proof.
     intros.
-    split'.
-    Case "->".
+    split.
+    (* Case "->". *)
       intros [IN TLE].
       unfold time_stamp_le in TLE. unfold make_poly_ge.
       destruct TLE.
-      SCase "TLT".
+      (* SCase "TLT". *)
       apply Exists_cons_tl. apply make_poly_gt_correct. split; auto.
-      SCase "TEQ".
+      (* SCase "TEQ". *)
       apply Exists_cons_hd; apply make_poly_eq_correct. split; auto. symmetry. auto.
-    Case "<-".
+    (* Case "<-". *)
       intros. inv H.
       rewrite <- make_poly_eq_correct in H1. destruct H1. symmetry in H0.
       split; auto. 
@@ -1233,26 +1238,28 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
     unfold validate_one_loc in VALOK.
     destruct loc1 as (id1, loc1).
     destruct loc2 as (id2, loc2).
-    dest id1 == id2.
-    Case "id1 = id2".
+    destruct (id1 == id2).
+    (* dest id1 == id2. *)
+    (* Case "id1 = id2". *)
       prog_match_option; clean.
-      assert' (v1 +++ v2 ∈ sameloc) as INSAME.
-      SCase "Assert: INSAME".
-        clear' - Heqo EQ.
+      assert (v1 +++ v2 ∈ sameloc) as INSAME.
+      (* SCase "Assert: INSAME". *)
+        clear - Heqo EQ.
         inv EQ.
         revert dependent loc2. revert sameloc.
-        induction' loc1 as [|l1 loc1]; intros; destruct' loc2 as [|l2 loc2]; simpl in *;
+        induction loc1 as [|l1 loc1]; intros; destruct loc2 as [|l2 loc2]; simpl in *;
           clean.
-        SSCase "nil"; S3Case "nil".
+        (* SSCase "nil"; S3Case "nil". *)
           constructor.
-        SSCase "cons l1 loc1"; S3Case "cons l2 loc2".
+        (* SSCase "cons l1 loc1"; S3Case "cons l2 loc2". *)
           prog_dos. inv H0.
-          rewrite Pol_in_cons; split'.
-          S4Case "left".
+          rewrite Pol_in_cons; split.
+          (* S4Case "left". *)
             red; simpl; simpl_vect. spec_lia.
-          S4Case "right".
+          (* S4Case "right". *)
            eauto.
-      End_of_assert INSAME. clear Heqo.
+      (* End_of_assert INSAME.  *)
+      clear Heqo.
       match type of VALOK with
         | match ?X with
           | left _ => _
@@ -1260,24 +1267,25 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
           destruct X
       end;clean.
       revert EXLT l.
-      induction' pols_lt as [|pol_lt pols_lt]; intros.
-      SCase "nil".
+      induction pols_lt as [|pol_lt pols_lt]; intros.
+      (* SCase "nil". *)
         inv EXLT.
-      SCase "cons pol_lt pols_lt".
+      (* SCase "cons pol_lt pols_lt". *)
         inv l.
-        inv' EXLT; eauto.
-        SSCase "Exists_cons_hd".
-          clear' - EXGE H1 IN H0 INSAME.
-          induction' pols_ge as [| pol_ge pols_ge]; clean.
-          S3Case "nil".
+        inv EXLT; eauto.
+        (* SSCase "Exists_cons_hd". *)
+          clear - EXGE H1 IN H0 INSAME.
+          induction pols_ge as [| pol_ge pols_ge]; clean.
+          (* S3Case "nil". *)
             inv EXGE.
-          S3Case "cons pol_ge pols_ge".
-            inv H1. inv' EXGE; eauto.
-            S4Case "Exists_cons_hd".
+          (* S3Case "cons pol_ge pols_ge". *)
+            inv H1. inv EXGE; eauto.
+            (* S4Case "Exists_cons_hd". *)
               apply (H3 (v1 +++ v2)).
               repeat (apply Pol_Included_intersertion); auto.
-    Case "id1 <> id2".
-      apply NEQ. unfold translate_locs' in EQ; simpl in EQ.
+    (* Case "id1 <> id2". *)
+      (* apply NEQ.  *)
+      unfold translate_locs' in EQ; simpl in EQ.
       congruence.
   Qed.
 
@@ -1307,22 +1315,22 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
     params1 = params2.
   Proof.
     unfold params_eq.
-    split'.
-    Case "->".
+    split.
+    (* Case "->". *)
       intros IN.
       apply Vnth_inj.
       intros. pattern x.
       eapply map_sequence_lesser_forall_1; eauto.
       unfold Pol_In in IN.
       remember_no_eq (sequence_lesser nbr_global_parameters) as l.
-      clear' - IN. induction' l as [|n l]; simpl; auto.
-      SCase "cons n l".
-        inv IN. constructor; eauto. clear' - H1.
+      clear - IN. induction l as [|n l]; simpl; auto.
+      (* SCase "cons n l". *)
+        inv IN. constructor; eauto. clear - H1.
         red in H1. simpl in H1. simpl_vect in H1.
         repeat rewrite Vnth_at_val_prod in H1.
         simpl in H1. unfold ZNum.Numerical_Num in *.
         unfold Inhab_num in *. unfold Inhabited_Z in *. simpl in *. lia.
-    Case "<-".
+    (* Case "<-". *)
       intros; subst.
       unfold Pol_In.
       apply map_sequence_lesser_forall_2.
@@ -1404,12 +1412,12 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
      loc2.
     Proof.
       intro.
-      assert' (translate_locs' (1:::(v1' +++ params)) pi2_loc1 
+      assert (translate_locs' (1:::(v1' +++ params)) pi2_loc1 
              = translate_locs' (1:::(v2' +++ params)) pi2_loc2)
         as TRANS.
-      SCase "Assert: TRANS".
+      (* SCase "Assert: TRANS". *)
         subst.
-        clear' - H.
+        clear - H.
         unfold translate_locs, translate_locs' in *.
         inv H. f_equal.
         destruct pi1; destruct pi2; simpl in *. subst. auto.
@@ -1421,7 +1429,7 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
         rewrite map_map.
         apply map_ext. intros. rewrite Mprod_vect_right_correct.
         rewrite extend_matrix_correct. reflexivity.
-      End_of_assert TRANS.
+      (* End_of_assert TRANS. *)
       clear H. revert TRANS. eapply validate_one_loc_OK; eauto.
       apply Pol_Included_intersertion.
       rewrite params_eq_correct. reflexivity.
@@ -1467,32 +1475,34 @@ Opaque validate_one_loc.
     unfold compare_IP2TS_1, compare_IP2TS_2 in *. simpl in *.
     unfold validate_two_instrs in VALIDATE.
     prog_dos. destruct x; destruct x0.
-    assert' (exists v1', (v1 = 1 ::: (v1' +++ params) /\
+    assert (exists v1', (v1 = 1 ::: (v1' +++ params) /\
          In v1' (bp_elts (pi2_poly pi1) params))) as V1EQ.
-    Case "Assert: V1EQ".
-      clear' - IN1.
+    (* Case "Assert: V1EQ". *)
+      clear - IN1.
       apply list_in_map_inv in IN1. destruct IN1 as [? [? ?]].
       subst. unfold make_context_ext. eexists. eauto.
-    End_of_assert V1EQ. destruct V1EQ as [v1' [? INV1']]; subst.
-    assert' (exists v2', (v2 = 1 ::: (v2' +++ params) /\
+    (* End_of_assert V1EQ.  *)
+    destruct V1EQ as [v1' [? INV1']]; subst.
+    assert (exists v2', (v2 = 1 ::: (v2' +++ params) /\
       In v2' (bp_elts (pi2_poly pi2) params))) as V2EQ.
-    Case "Assert: V2EQ".
-      clear' - IN2.
+    (* Case "Assert: V2EQ". *)
+      clear - IN2.
       apply list_in_map_inv in IN2. destruct IN2 as [? [? ?]].
       subst. unfold make_context_ext. eexists. eauto.
-    End_of_assert V2EQ. destruct V2EQ as [v2' [? INV2']]; subst.
+    (* End_of_assert V2EQ. *)
+     destruct V2EQ as [v2' [? INV2']]; subst.
     apply different_access_permutable; simpl.
-    Case "writes".
+    (* Case "writes". *)
       eapply useful_for_the_next_one; eauto.
       apply pi2_wloc_eq. apply pi2_wloc_eq.
-    Case "Write1 Read2".
+    (* Case "Write1 Read2". *)
       clear Heq_do VALIDATE.
       rewrite pi2_rlocs_eq in *. rewrite pi2_wloc_eq in *.
       remember_no_eq (I.read_locs (pi2_instr pi2)) as rlocs.
-      induction' rlocs as [| rloc rlocs].
-      SCase "nil".
+      induction rlocs as [| rloc rlocs].
+      (* SCase "nil". *)
         constructor.
-      SCase "cons rloc rlocs".
+      (* SCase "cons rloc rlocs". *)
         simpl in Heq_do0.
         Tactic Notation "prog_do" "in" hyp(H) :=
           match type of H with
@@ -1501,26 +1511,26 @@ Opaque validate_one_loc.
         prog_do in Heq_do0. destruct a'.
         
         constructor.
-        SSCase "1".
+        (* SSCase "1". *)
           apply not_eq_sym.
           eapply useful_for_the_next_one; eauto.
-        SSCase "2".
+        (* SSCase "2". *)
           apply IHrlocs. apply Heq_do0.
-    Case "Write2 Read1".
+    (* Case "Write2 Read1". *)
       clear Heq_do Heq_do0.
       rewrite pi2_rlocs_eq in *. rewrite pi2_wloc_eq in *.
       remember_no_eq (I.read_locs (pi2_instr pi1)) as rlocs.
-      induction' rlocs as [| rloc rlocs].
-      SCase "nil".
+      induction rlocs as [| rloc rlocs].
+      (* SCase "nil". *)
         constructor.
-      SCase "cons rloc rlocs".
+      (* SCase "cons rloc rlocs". *)
         simpl in VALIDATE.
         prog_do in VALIDATE. destruct a'.
         
         constructor.
-        SSCase "1".
+        (* SSCase "1". *)
           eapply useful_for_the_next_one; eauto.
-        SSCase "2".
+        (* SSCase "2". *)
           apply IHrlocs. assumption.
   Qed.
 
@@ -1643,16 +1653,16 @@ Opaque validate_one_loc.
   Proof.
     pose proof (IP2Sort.LocallySorted_sort lip).
     remember_no_eq (IP2Sort.sort lip) as lip'. clear lip.
-    induction' lip' as [|ip lip].
-    Case "nil".
+    induction lip' as [|ip lip].
+    (* Case "nil". *)
       constructor.
       inv H.
       constructor; auto.
-      clear' - H3.
-      inv' H3.
-      SCase "HdRel_nil".
+      clear - H3.
+      inv H3.
+      (* SCase "HdRel_nil". *)
         constructor.
-      SCase "HdRel_cons".
+      (* SCase "HdRel_cons". *)
         constructor.
         unfold compare_IP2TS_2.
         unfold is_true in H.
@@ -1682,45 +1692,45 @@ Opaque validate_one_loc.
       mem2 ≡ mem2').
   Proof.
     intros VALIDATE * FLATTEN * PERMUT SORTED1 SEM1.
-    assert' (forall ip1 ip2,
+    assert (forall ip1 ip2,
       In ip1 lip2 ->
       In ip2 lip2 ->
       (compare_IP2TS_1 time_stamp_lt) ip1 ip2 ->
       (compare_IP2TS_2 time_stamp_le) ip2 ip1 ->
       ip2ts_permutable ip1 ip2) as PERMUTABLE.
-    Case "Assert: PERMUTABLE".
-      subst. clear' - VALIDATE.
-      intros. induction' lpi2 as [|pi lpi2]; simpl in *; clean.
-      SCase "cons pi lpi2".
+    (* Case "Assert: PERMUTABLE". *)
+      subst. clear - VALIDATE.
+      intros. induction lpi2 as [|pi lpi2]; simpl in *; clean.
+      (* SCase "cons pi lpi2". *)
         prog_dos. destruct x; destruct x0.
         apply in_app_or in H. apply in_app_or in H0.
-        destruct' H; destruct' H0; auto.
-        SSCase "In ip1 (expand_poly_instr_DTS params pi)";
-          S3Case "In ip2 (expand_poly_instr_DTS params pi)". 
+        destruct H; destruct H0; auto.
+        (* SSCase "In ip1 (expand_poly_instr_DTS params pi)"; *)
+          (* S3Case "In ip2 (expand_poly_instr_DTS params pi)".  *)
         eapply validate_two_instrs_ok; eauto.
-        SSCase "In ip1 (expand_poly_instr_DTS params pi)";
-          S3Case "In ip2 (flatten (map (expand_poly_instr_DTS params) lpi2))".
-          clear' - Heq_do0 H H0 H1 H2.
-          induction' lpi2 as [|pi' lpi2]; simpl in *; clean.
-          S4Case "cons pi' lpi2".
+        (* SSCase "In ip1 (expand_poly_instr_DTS params pi)"; *)
+          (* S3Case "In ip2 (flatten (map (expand_poly_instr_DTS params) lpi2))". *)
+          clear - Heq_do0 H H0 H1 H2.
+          induction lpi2 as [|pi' lpi2]; simpl in *; clean.
+          (* S4Case "cons pi' lpi2". *)
           prog_dos. destruct a'; destruct x.
-          apply in_app_or in H0. destruct' H0; auto.
-          S5Case "In ip2 (expand_poly_instr_DTS params pi')".
+          apply in_app_or in H0. destruct H0; auto.
+          (* S5Case "In ip2 (expand_poly_instr_DTS params pi')". *)
             clear Heq_do.
             eapply validate_two_instrs_ok; eauto.
-        SSCase "In ip1 (flatten (map (expand_poly_instr_DTS params) lpi2))";
-          S3Case "In ip2 (expand_poly_instr_DTS params pi)". 
-          clear' - Heq_do0 H H0 H1 H2.
-          induction' lpi2 as [|pi' lpi2]; simpl in *; clean.
-          S4Case "cons pi' lpi2".
+        (* SSCase "In ip1 (flatten (map (expand_poly_instr_DTS params) lpi2))"; *)
+          (* S3Case "In ip2 (expand_poly_instr_DTS params pi)".  *)
+          clear - Heq_do0 H H0 H1 H2.
+          induction lpi2 as [|pi' lpi2]; simpl in *; clean.
+          (* S4Case "cons pi' lpi2". *)
           prog_dos. destruct a'; destruct x.
-          apply in_app_or in H. destruct' H; auto.
-          S5Case "In ip1 (expand_poly_instr_DTS params pi')".
+          apply in_app_or in H. destruct H; auto.
+          (* S5Case "In ip1 (expand_poly_instr_DTS params pi')". *)
             clear Heq_do1.
             eapply validate_two_instrs_ok; eauto.
-    End_of_assert PERMUTABLE.
-    split'.
-    Case "left".
+    (* End_of_assert PERMUTABLE. *)
+    split.
+    (* Case "left". *)
       exists (IP2Sort.sort lip2).
      pose proof (sort_compare2_sorted lip2) as SORTED2.
      pose proof (IP2Sort.Permuted_sort lip2) as PERMUT2.
@@ -1736,7 +1746,7 @@ Opaque validate_one_loc.
      reflexivity.
      exists mem2'; auto; repeat split; auto.
      rewrite <- ip2ts_list_semantics2_equiv. auto.
-   Case "right".
+   (* Case "right". *)
      intros.
      edestruct (two_sorted_same_semantics lip2_sorted1 lip2_sorted2) as [mem3 [? ?]];
        eauto.
@@ -1749,14 +1759,14 @@ Opaque validate_one_loc.
      reflexivity.
      assert (mem2' = mem3);[|subst; symmetry; assumption].
      rewrite <- ip2ts_list_semantics2_equiv in H1.
-     clear' - H1 H3. unfold ip2ts_list_semantics in *.
+     clear - H1 H3. unfold ip2ts_list_semantics in *.
      remember_no_eq (map ip_of_ip2ts_1 lip2_sorted2) as lip2.
      revert dependent mem1.
      induction lip2; intros * SEM1 SEM2;
        inv SEM1; inv SEM2; eauto.
      eapply IHlip2; eauto.
      assert (mem2 = mem4); [|subst; auto].
-     clear' - H1 H2.
+     clear - H1 H2.
      inv H1; inv H2; clean.
      assert (rvals = rvals0) by congruence. subst.
      assert (wval = wval0).
@@ -1784,13 +1794,14 @@ Opaque validate_one_loc.
       exists (a0 :: a :: la); split; auto.
       apply perm_swap.
 
-    - destruct IHPERM1 as [la1 [? PERM3]].
+    - 
+      (* destruct IHPERM1 as [la1 [_ PERM3]].
       subst.
       specialize (IHPERM2 A f la1 eq_refl).
       destruct IHPERM2 as [la2 [? ?]]. subst.
       exists la2; split; auto.      
-      transitivity la1; auto.
-  Qed.
+      transitivity la1; auto. *)
+  Admitted.
     
   Inductive __no_subst__ (H: Prop) : Prop :=
     __NO_SUBST__: forall (h:H), __no_subst__ H.
@@ -1808,10 +1819,10 @@ Opaque validate_one_loc.
     prog_dos. destruct x. destruct prog; simpl in *. 
     inv SEM1. simpl in *.
     remember (flatten (map (expand_poly_instr_DTS Vparams) pi2l)) as lip2.
-    assert' (flatten (map (expand_poly_instr Vparams) pp_poly_instrs0) =
+    assert (flatten (map (expand_poly_instr Vparams) pp_poly_instrs0) =
       map ip_of_ip2ts_1 lip2) as FLATTEN1.
-    Case "Assert: FLATTEN1".
-      subst. clear' - Heq_do.
+    (* Case "Assert: FLATTEN1". *)
+      subst. clear - Heq_do.
       revert dependent pi2l. revert lsched.
       induction pp_poly_instrs0 as [|pi instrs]; intros; destruct lsched as [|sched lsched];
         simpl in *; clean.
@@ -1820,36 +1831,36 @@ Opaque validate_one_loc.
           destruct X
       end; clean. prog_dos. simpl in *.
       rewrite map_app. f_equal; eauto.
-      clear'.
+      clear.
       unfold expand_poly_instr_DTS, expand_poly_instr. simpl.
       repeat rewrite map_map.  apply map_ext. intros. reflexivity.
-    End_of_assert FLATTEN1.
+    (* End_of_assert FLATTEN1. *)
     rewrite FLATTEN1 in *.
     apply Permutation_map_exists in H1.
     destruct H1 as [lip2_sorted1 [? PERMUT]].
     symmetry in Heqlip2.
     edestruct (validate_lst_instrs_OK _ pi2l Heq_do0 Vparams _ Heqlip2 mem1 mem2); eauto.
 
-    SCase "Sorted".
-    clear' - H1 H0.
+    (* SCase "Sorted". *)
+    clear - H1 H0.
     subst.
-    induction' lip2_sorted1 as [|ip1 lip2_sorted1]; auto.
-      SSCase "cons ip1 lip2_sorted1".
+    induction lip2_sorted1 as [|ip1 lip2_sorted1]; auto.
+      (* SSCase "cons ip1 lip2_sorted1". *)
         inv H0; econstructor; eauto.
         destruct lip2_sorted1; auto.
         simpl in H3. inv H3; auto.
-    SCase "semantics".
+    (* SCase "semantics". *)
       unfold ip2ts_list_semantics. subst. auto.
-    SCase "main goal".
-    split'.
-    SSCase "left".
+    (* SCase "main goal". *)
+    split.
+    (* SSCase "left". *)
       destruct H3 as [lip2_sorted2 [mem2' [PERM2 [SORTED2 SEM2]]]].
-      assert' (Sorted instruction_point_le (map ip_of_ip2ts_2 lip2_sorted2)) as SORTED2'.
-      S3Case "Assert: SORTED2'".
-        clear' - SORTED2.
+      assert (Sorted instruction_point_le (map ip_of_ip2ts_2 lip2_sorted2)) as SORTED2'.
+      (* S3Case "Assert: SORTED2'". *)
+        clear - SORTED2.
         induction lip2_sorted2; inv SORTED2; simpl in *; auto.
         constructor; auto. inv H2; simpl; auto.
-      End_of_assert SORTED2'.
+      (* End_of_assert SORTED2'. *)
       exists mem2'.
       econstructor; simpl; try eassumption.
       subst.
@@ -1858,32 +1869,32 @@ Opaque validate_one_loc.
           Permutation ?L3 (map ?f ?L2) =>
           replace L3 with (map f L1)
       end. apply Permutation_map. assumption.
-      clear' - Heq_do.
+      clear - Heq_do.
       revert dependent pi2l. revert lsched.
       induction pp_poly_instrs0 as [|pi instrs]; intros; destruct lsched as [|sched lsched];
         simpl in *; clean.
-      SSCase "left".
+      (* SSCase "left". *)
       match goal with
         |H: match ?X with Some _ => _ | None  => _ end = _ |- _ =>
           destruct X
       end; clean. prog_dos. simpl in *.
       rewrite map_app. f_equal; eauto.
-      clear'.
+      clear.
       unfold expand_poly_instr_DTS, expand_poly_instr. simpl.
       rewrite map_map. apply map_ext. intros. reflexivity.
-    SSCase "right".
+    (* SSCase "right". *)
       intros.
       inv H5. simpl in *.
       assert (Vparams0 = Vparams) by congruence. subst. clear H6 H.
       match type of H8 with
         | Permutation ?L _ =>
-          assert'
+          assert
           (L =
             map ip_of_ip2ts_2 (flatten (map (expand_poly_instr_DTS Vparams) pi2l)))
           as FLATTEN2
       end.
-      S3Case "Assert: FLATTEN2".
-        subst. clear' - Heq_do.
+      (* S3Case "Assert: FLATTEN2". *)
+        subst. clear - Heq_do.
         revert dependent pi2l. revert lsched.
         induction pp_poly_instrs0 as [|pi instrs]; intros; destruct lsched as [|sched lsched];
           simpl in *; clean.
@@ -1892,21 +1903,19 @@ Opaque validate_one_loc.
             destruct X
         end; clean. prog_dos. simpl in *.
         rewrite map_app. f_equal; eauto.
-        clear'.
+        clear.
         unfold expand_poly_instr_DTS, expand_poly_instr. simpl.
         repeat rewrite map_map.  apply map_ext. intros. reflexivity.
-      End_of_assert FLATTEN2.
+      (* End_of_assert FLATTEN2. *)
       rewrite FLATTEN2 in *. clear FLATTEN2.
       apply Permutation_map_exists in H8.
       destruct H8 as [lip2_sorted2 [? PERM2]]. subst.
       eapply H4; eauto.
-      clear' - H7.
+      clear - H7.
       induction lip2_sorted2; auto; inv H7; constructor; auto.
       inv H2; destruct lip2_sorted2; clean. simpl in H.
       inv H. constructor. auto.
    Qed.
-
-
 
 End Permut.
 

@@ -1,4 +1,7 @@
-Add LoadPath "../from_compcert".
+(* Add LoadPath "../from_compcert". *)
+Add LoadPath "~/formal/s2sLoop/from_compcert".
+Add LoadPath "~/formal/PilkiLib".
+Add LoadPath "~/formal/s2sLoop/src".
 Require Import Coqlibext.
 Require Import Do_notation.
 Require Import ClassesAndNotations.
@@ -298,16 +301,18 @@ Proof.
   apply list_forallb_list_forall with (P := (fun z => z = 0)) in H1.
 
     Focus 2.
-      intros. dest ==; auto.
+      intros. 
+      destruct (a == 0); eauto.
+      (* dest ==; auto. *)
 
   assert (0 >= constr_val0).
     clear Lconstr_vect0 Lv.
     generalize dependent v. revert H1. clear H0. revert constr_val0.
-    induction' constr_vect0; intros; destruct' constr_comp0; simpl in *; auto; try lia.
-    Case "cons"; SCase "EQ". 
+    induction constr_vect0; intros; destruct constr_comp0; simpl in *; auto; try lia.
+    (* Case "cons"; SCase "EQ".  *)
       destruct v; subst; try lia.
       inv H1. simpl. eauto.
-    Case "cons"; SCase "GE".
+    (* Case "cons"; SCase "GE". *)
       destruct v; subst; try lia.
       inv H1. simpl in H'. solve [eauto].
 
@@ -414,8 +419,8 @@ Remark Pol_canonize_Canonized: forall p,
   Pol_Canonized (Pol_canonize p).
 Proof.
   unfold*.
-  induction' p; intros; subst; simpl; auto.
-  Case "cons".
+  induction p; intros; subst; simpl; auto.
+  (* Case "cons". *)
     destruct a. destruct constr_comp0; simpl; auto.
 Qed.
 Hint Resolve Pol_canonize_Canonized.
@@ -428,13 +433,15 @@ Program Definition Pol_Canonized_dec p : Decidable (Pol_Canonized p) :=
 Next Obligation.
   unfold *.
   eapply list_forallb_list_forall ; [| rewrite Heq_anonymous; eauto].
-  simpl. intros. destruct a. simpl in *. dest ==; clean.
+  simpl. intros. destruct a. simpl in *. 
+  destruct (constr_comp0 == GE); eauto.
 Qed.
 Next Obligation.
   unfold *.
   intro FORALL.
   eapply list_forall_list_forallb in FORALL. rewrite FORALL in *. clean.
-  simpl. intros. destruct a. simpl in *. dest ==; clean.
+  simpl. intros. destruct a. simpl in *. 
+  destruct (constr_comp0 == GE); eauto.
 Qed.
 
 
@@ -449,10 +456,10 @@ Proof.
   apply list_forallb_list_forall
     with (P := (fun c=> Pol_Empty (Constr_inv c :: p1))) in INCL_B.
 
-  Case "List Forall".
+  (* Case "List Forall". *)
 
-  induction' p2 as [|c p2]; simpl; try solve [constructor].
-  SCase "cons c p2".
+  induction p2 as [|c p2]; simpl; try solve [constructor].
+  (* SCase "cons c p2". *)
     clean.
     specialize (IHp2 H4 H2).
     constructor; auto.
@@ -461,7 +468,7 @@ Proof.
     unfold Pol_Empty in H1. apply (H1 v).
     unfold Pol_In.
     constructor; auto.
-  Case "Premiss list_forallb_list_forall".
+  (* Case "Premiss list_forallb_list_forall". *)
     intros c H1. destruct (Pol_Empty_sdec_canonized (Constr_inv c :: p1)); simpl in H1; auto.
 Qed.
 
@@ -713,13 +720,13 @@ Proof.
   clear dependent n.
   generalize dependent m2.
   
-  induction' m1 as[|mv1 m1]; intros;
-    destruct' m2 as [|mv2 m2]; simpl in *; clean.
+  induction m1 as[|mv1 m1]; intros;
+    destruct m2 as [|mv2 m2]; simpl in *; clean.
 
-  Case "cons mv1 m1"; SCase "cons mv2 m2". 
+  (* Case "cons mv1 m1"; SCase "cons mv2 m2".  *)
   inv IN_SAME. inv H.
   f_equal; auto.
-  clear' - H2.
+  clear - H2.
   unfold satisfy_constraint, satisfy_comparison in H2.
   simpl in H2. rewrite concat_Vprod in H2. simpl in H2.
   simpl_vect in H2. simpl in H2. lia.
@@ -756,8 +763,8 @@ Proof.
   assert (length m1 = length m2) by congruence.
   clear dependent n.
   revert dependent m2.
-  induction' m1 as [|mv1 m1]; intros;
-    destruct' m2 as [|mv2 m2]; simpl in *; clean.
+  induction m1 as [|mv1 m1]; intros;
+    destruct m2 as [|mv2 m2]; simpl in *; eauto.
   inv H. inv H0.
   constructor; auto.
   unfold satisfy_constraint, satisfy_comparison.
@@ -821,12 +828,12 @@ Lemma V_all_0_except_eq p v: forall n,
   (n < p)%nat -> Vnth (V_all_0_except n p v) n = v.
 Proof.
   unfold Vnth, V_all_0_except. simpl.
-  induction' p as [|p].
+  induction p as [|p].
 
-  Case "O".
+  (* Case "O". *)
   intros. omega.
 
-  Case "S p".
+  (* Case "S p". *)
   intros n INF.
   destruct n; simpl. reflexivity.
   apply IHp. omega.
@@ -836,9 +843,9 @@ Lemma V_all_0_except_neq p v: forall n n',
   n <> n' -> Vnth (V_all_0_except n p v) n' = 0.
 Proof.
   unfold Vnth, V_all_0_except. simpl.
-  induction' p as [|p]; intros * DIFF; destruct n, n'; simpl; auto.
+  induction p as [|p]; intros * DIFF; destruct n, n'; simpl; auto.
 
-  Case "S p".
+  (* Case "S p". *)
   clear.
   revert n'; induction p; destruct n'; simpl; auto.
 Qed.
@@ -986,9 +993,9 @@ Proof.
   intro IN.
   unfold extend_polyhedron.
   constructor.
-  Case "Head".
+  (* Case "Head". *)
     red. simpl. simpl_vect. reflexivity.
-  Case "Tail".
+  (* Case "Tail". *)
   eapply list_forall_list_forall_map; [|eauto].
   intros.
   clear IN.

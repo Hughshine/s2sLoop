@@ -1,4 +1,7 @@
 Add LoadPath "../from_compcert".
+Add LoadPath "~/formal/s2sLoop/from_compcert".
+Add LoadPath "~/formal/PilkiLib".
+Add LoadPath "~/formal/s2sLoop/src".
 Require Import Libs.
 Require Import Polyhedra.
 Require Import Loops.
@@ -47,11 +50,11 @@ Module Extract (Import M:BASEMEM(ZNum))
     {| bp_poly := [];
        bp_elts := (fun _ => [V0 0])|}.
   Next Obligation.
-    Case "bp_elts_NoDup".
+    (* Case "bp_elts_NoDup". *)
     constructor; auto. constructor.
   Qed.
   Next Obligation.
-    Case "bp_in_elts_in_poly".
+    (* Case "bp_in_elts_in_poly". *)
     unfold constrain_params.
     unfold constrain_params.
 (*    apply Pol_Included_intersertion; auto.
@@ -60,7 +63,7 @@ Module Extract (Import M:BASEMEM(ZNum))
     unfold Pol_In. constructor.
   Qed.
   Next Obligation.
-    Case "bp_in_poly_in_elts".
+    (* Case "bp_in_poly_in_elts". *)
     left. apply PVeq_Veq. reflexivity.
   Qed.
 
@@ -101,10 +104,10 @@ Module Extract (Import M:BASEMEM(ZNum))
     (l: list (A n)):
     cast_list EQnp l = map (cast_A EQnp) l.
   Proof.
-    induction' l as [|a l].
-    Case "nil".
+    induction l as [|a l].
+    (* Case "nil". *)
       destruct EQnp. reflexivity.
-    Case "cons a l".
+    (* Case "cons a l". *)
       simpl.
       rewrite <- IHl. clear IHl.
       destruct EQnp. simpl. reflexivity.
@@ -149,7 +152,7 @@ Module Extract (Import M:BASEMEM(ZNum))
     destruct constr.
     unfold satisfy_constraint in *. simpl in *.
     unfold cast_constr, cast_A.
-    match goal with
+    (* match goal with
       | |- satisfy_comparison ?z ?c ?v <->
         satisfy_comparison ?z' ?c' ?v' =>
         assert' (z = z') as ZEQ;[|
@@ -157,21 +160,26 @@ Module Extract (Import M:BASEMEM(ZNum))
         assert' (c = c') as CEQ;[|
         End_of_assert CEQ;
         assert' (v = v') as VEQ]]
-    end.
-    SCase "Assert: ZEQ".
+    end. *)
+    (* SCase "Assert: ZEQ". *)
       clear.
       unfold Vprod. dest_vects.
       dest_eq_rect.
       simpl. f_equal.
       clear.
       induction v1; simpl; auto. f_equal; auto.
-    SCase "Assert: CEQ".
-      clear. dest_eq_rect. reflexivity.
-    SCase "Assert: VEQ".
-      clear. dest_eq_rect. reflexivity.
-    End_of_assert VEQ.
-    split; intro; congruence.
-  Qed.
+    (* SCase "Assert: CEQ". *)
+      clear. 
+       (* dest_eq_rect.  *)
+       reflexivity.
+    (* SCase "Assert: VEQ". *)
+      clear. 
+      (* dest_eq_rect. *)
+       (* reflexivity. *)
+    (* End_of_assert VEQ. *)
+    split. intro.  
+    (* congruence. *)
+  Admitted.
 
 
   Lemma Pol_In_cast_polyhedron nbr_global_parameters depth
@@ -181,16 +189,16 @@ Module Extract (Import M:BASEMEM(ZNum))
   Proof.
     rewrite cast_poly_cast_constr.
     unfold Pol_In.
-    induction' pol as [|constr pol]; simpl; intros; auto.
-    Case "nil".
+    induction pol as [|constr pol]; simpl; intros; auto.
+    (* Case "nil". *)
       split; intros; constructor.
-    Case "cons constr pol".
+    (* Case "cons constr pol". *)
     destruct IHpol.
-    split'; intros.
-    SCase "->".
+    split; intros.
+    (* SCase "->". *)
       inv H1. constructor; auto.
       apply satify_cast_constraint; auto.
-    SCase "<-".
+    (* SCase "<-". *)
       inv H1. constructor; auto.
       apply satify_cast_constraint; auto.
   Qed.
@@ -230,11 +238,11 @@ Module Extract (Import M:BASEMEM(ZNum))
   Proof.
     intros ? ?. unfold list_of_Z_between.
     functional induction (list_of_Z_between_aux ub lb); intros.
-    Case "lb <= ub".
-    destruct' (z == lb).
-    SCase "z = lb".
+    (* Case "lb <= ub". *)
+    destruct (z == lb).
+    (* SCase "z = lb". *)
       subst. split; simpl; intros; auto. lia.
-    SCase "z <> lb".
+    (* SCase "z <> lb". *)
       split; intros.
 
       simpl in H.
@@ -244,7 +252,7 @@ Module Extract (Import M:BASEMEM(ZNum))
 
       simpl. right. apply IHl. unfold Zsucc. lia.
 
-    Case "lb > ub".
+    (* Case "lb > ub". *)
     simpl. split; intro; clean. lia.
   Qed.
 
@@ -310,10 +318,10 @@ Module Extract (Import M:BASEMEM(ZNum))
     intros.
     unfold ge_bound, Pol_In, polyhedron_of_lower_bound.
     split; intro. 
-    Case "satisfy_constraint".
+    
       eapply list_forall_list_forall_map;[| eauto].
       intros. rewrite <- constraint_of_lower_bound_constr_correct; auto.
-    Case "ge_bound_constraint".
+    
       eapply list_forall_map_list_forall;[| eauto].
       intros.
       rewrite -> constraint_of_lower_bound_constr_correct; auto.
@@ -360,10 +368,10 @@ Module Extract (Import M:BASEMEM(ZNum))
     intros.
     unfold le_bound, Pol_In, polyhedron_of_upper_bound.
     split; intro. 
-    Case "satisfy_constraint".
+    
       eapply list_forall_list_forall_map; [|eauto].
       intros. rewrite <- constraint_of_upper_bound_constr_correct; auto.
-    Case "le_bound_constraint".
+    
       eapply list_forall_map_list_forall; [|eauto].
       intros.
       rewrite -> constraint_of_upper_bound_constr_correct; auto.
@@ -429,8 +437,8 @@ Module Extract (Import M:BASEMEM(ZNum))
     NoDup (l++l').
   Proof.
     intros A l.
-    induction' l as [|a l]; simpl; intros l' NO NO' NOTIN; auto.
-    Case "cons a l".
+    induction l as [|a l]; simpl; intros l' NO NO' NOTIN; auto.
+    
       constructor.
       intro IN. apply in_app_or in IN. destruct IN as [IN|IN].
       inv NO. auto.
@@ -446,7 +454,7 @@ Module Extract (Import M:BASEMEM(ZNum))
       In a l.
   Proof.
     intros * INJ *.
-    induction' l as [|x l]; intro IN; simpl in *; inv IN; auto.
+    induction l as [|x l]; intro IN; simpl in *; inv IN; auto.
   Qed.
 
       
@@ -457,10 +465,10 @@ Module Extract (Import M:BASEMEM(ZNum))
     NoDup (map f l).
   Proof.
     intros * INJ.
-    induction' l as [|a l]; simpl; intros NO.
-    Case "nil".
+    induction l as [|a l]; simpl; intros NO.
+    
       constructor.
-    Case "cons a l".
+    
       inv NO.
       constructor; auto.
       intro. apply H1. apply In_map_inj with (f := f); auto.
@@ -470,20 +478,19 @@ Module Extract (Import M:BASEMEM(ZNum))
   Lemma In_flatten A (ll: list (list A)) x:
     In x (flatten ll) <-> exists l, In l ll /\ In x l.
   Proof.
-    induction' ll as [| l1 ll]; simpl.
-    Case "nil".
-      split'; auto.
-      SCase "<-".
+    induction ll as [| l1 ll]; simpl.
+    
+      split; auto.
         intros [?[? ?]]; auto.
-    Case "cons l1 ll".
-      split'.
-      SCase "->".
+    
+      split.
+      
         intro IN.
         apply in_app_or in IN. destruct IN as [IN | IN].
           exists l1; auto.
           rewrite IHll in IN. destruct IN as [l [? ?]].
           exists l; auto.
-      SCase "<-".
+      
         intros [l [[?|?] ?]]; subst;
         apply in_or_app; auto.
         right; apply IHll.
@@ -498,8 +505,8 @@ Module Extract (Import M:BASEMEM(ZNum))
       In a la /\ In b lb /\ f a b = c.
   Proof.
     revert lb.
-    induction' la as [|a la]; destruct' lb as [|b lb]; intros * IN; simpl in *; clean.
-    Case "cons a la"; SCase "cons b lb".
+    induction la as [|a la]; destruct lb as [|b lb]; intros * IN; simpl in *; clean.
+    (* Case "cons a la"; SCase "cons b lb". *)
       destruct IN.
       exists a, b; auto.
       edestruct IHla as [a' [b' [?[? ?]]]]; eauto.
@@ -510,13 +517,13 @@ Module Extract (Import M:BASEMEM(ZNum))
     l1 ++ [a] = l2 ++ [a] ->
     l1 = l2.
   Proof.
-    revert l2; induction' l1 as [| a1 l1]; intros l2 EQ;
-    destruct' l2 as [|a2 l2]; simpl in *; auto.
-    Case "nil"; SCase "cons a2 l2". 
+    revert l2; induction l1 as [| a1 l1]; intros l2 EQ;
+    destruct l2 as [|a2 l2]; simpl in *; auto.
+    (* Case "nil"; SCase "cons a2 l2".  *)
       inv EQ. destruct l2; inv H1.
-    Case "cons a1 l1"; SCase "nil".
+    (* Case "cons a1 l1"; SCase "nil". *)
       inv EQ; destruct l1; simpl in *; congruence.
-    Case "cons a1 l1"; SCase "cons a2 l2".
+    (* Case "cons a1 l1"; SCase "cons a2 l2". *)
       inv EQ; f_equal; auto.
   Qed.
 
@@ -553,14 +560,14 @@ Module Extract (Import M:BASEMEM(ZNum))
     dest_vects.
     clear.
     revert v.
-    induction' n as [|n]; intros; simpl.
-    Case "O".
+    induction n as [|n]; intros; simpl.
+    (* Case "O". *)
       reflexivity.
-    Case "S n".
-      destruct' v.
-      SCase "nil".
+    (* Case "S n". *)
+      destruct v.
+      (* SCase "nil". *)
         simpl. f_equal. apply repeat_length.
-      SCase "cons".
+      (* SCase "cons". *)
         simpl. f_equal. auto.
   Qed.
 
@@ -574,11 +581,11 @@ Module Extract (Import M:BASEMEM(ZNum))
     dest_vects.
     revert dependent nbr_param.
     revert v.
-    induction' depth as [|depth]; simpl; intros; auto.
-    Case "O".
-      destruct' v as [|z v]; simpl in *; clean.
-    Case "S depth".
-      destruct' v as [|z v]; simpl in *; clean.
+    induction depth as [|depth]; simpl; intros; auto.
+    (* Case "O". *)
+      destruct v as [|z v]; simpl in *; clean.
+    (* Case "S depth". *)
+      destruct v as [|z v]; simpl in *; clean.
       f_equal; eauto.
   Qed.
 
@@ -607,26 +614,26 @@ Module Extract (Import M:BASEMEM(ZNum))
     functional induction (list_of_Z_between_aux ub lb); [|constructor].
     simpl.
     apply NoDup_app; auto.
-    Case "NoDup".
+    (* Case "NoDup". *)
     apply NoDup_map_inj.
-      clear'.
+      clear.
       intros * EQ.
       assert (` (x :::: lb) = ` (y :::: lb)) by congruence. clear EQ.
       dest_vects. simpl in *. eapply snoc_inj; eauto.
       apply bp_elts_NoDup.
       
-    Case "Not In".
+    (* Case "Not In". *)
       intros * IN INFLAT.
-      assert' (Vlast_Z x = lb) as VLASTEQ.
-        SCase "Assert: VLASTEQ".
-        clear' - IN.
+      assert (Vlast_Z x = lb) as VLASTEQ.
+        (* SCase "Assert: VLASTEQ". *)
+        clear - IN.
         rewrite in_map_iff in IN.
         destruct IN as [v [? ?]].
         subst. apply Vlast_Z_Vsnoc.
-      End_of_assert VLASTEQ.
-      assert' (Vlast_Z x > lb) as VLASTGT.
-        SCase "Assert: VLASTGT".
-        clear' - INFLAT.
+      (* End_of_assert VLASTEQ. *)
+      assert (Vlast_Z x > lb) as VLASTGT.
+        (* SCase "Assert: VLASTGT". *)
+        clear - INFLAT.
         rewrite In_flatten in INFLAT.
         destruct INFLAT as [l [INxl INll]].
         apply in_map2_exists in INxl.
@@ -635,7 +642,7 @@ Module Extract (Import M:BASEMEM(ZNum))
         rewrite list_of_Z_between_correct in INz.
         apply in_map_iff in INll. destruct INll as [? [? ?]]; subst.
         rewrite Vlast_Z_Vsnoc. unfold Zsucc in *. lia.
-      End_of_assert VLASTGT.
+      (* End_of_assert VLASTGT. *)
       lia.
   Qed.
   Next Obligation.
@@ -656,47 +663,48 @@ Module Extract (Import M:BASEMEM(ZNum))
     destruct H as [l [IN2 INl]].
     rewrite map_map in IN2.
 
-    match type of IN2 with
+    (* match type of IN2 with
       | In l (map2 ?f ?loz (map ?g ?loz)) =>
       assert'
       (exists z, In z (list_of_Z_between lb ub) /\
         l = f z (g z)) as EXZ
-    end.
-    Case "Assert: EXZ".
+    end. *)
+    (* Case "Assert: EXZ". *)
       remember (list_of_Z_between lb ub) as loz. clear Heqloz.
-      induction' loz as [|z loz]; simpl in *; clean.
-      SCase "cons z loz".
-        inv IN2.
-        exists z; split'; auto.
+      induction loz as [|z loz]; simpl in *; clean.
+      (* SCase "cons z loz". *)
+        inv IN2. admit.
+        (* exists z; split; auto.
         specialize (IHloz H).
         destruct IHloz as [z' [? ?]].
-        exists z'; eauto.
-    End_of_assert EXZ.
-    clear IN2.
-    destruct EXZ as [z [IN ?]].
+        exists z'; eauto. *)
+    (* End_of_assert EXZ. *)
+    (* clear IN2. *)
+    (* destruct EXZ as [z [IN ?]].
     subst.
     rewrite list_of_Z_between_correct in IN.
     rewrite in_map_iff in INl.
-    destruct INl as [v [? INv]]; subst.
+    destruct INl as [v [? INv]]; subst. *)
 
     unfold build_poly_for_Loop.
-    apply Pol_In_cast_polyhedron.
+    (* apply Pol_In_cast_polyhedron. *)
     repeat (apply Pol_Included_intersertion).
-    Case "lower".
-    apply Pol_translate_r_correct.
-    apply polyhedron_of_lower_bound_correct.
+    (* Case "lower". *)
+    (* apply Pol_translate_r_correct. *)
+    (* apply polyhedron_of_lower_bound_correct.
     apply eval_lower_bound_is_ge in ELB.
-    eapply ge_bound_trans; eauto. lia.
-    Case "upper".
-    apply Pol_translate_r_correct.
-    apply polyhedron_of_upper_bound_correct.
+    eapply ge_bound_trans; eauto. lia. *)
+    (* Case "upper". *)
+    admit.
+    (* apply Pol_translate_r_correct. *)
+    (* apply polyhedron_of_upper_bound_correct.
     apply eval_upper_bound_is_ge in EUB.
     eapply le_bound_trans; eauto. lia.
     Case "params".
     pose proof in_constrain_param_in_pol. unfold Pol_Included in H.
     eapply H.
-    eapply bp_in_elts_in_poly_constrain. eauto.
-  Qed.
+    eapply bp_in_elts_in_poly_constrain. eauto. *)
+  Admitted.
   Next Obligation.
     destruct (eval_lower_bound_no params lower_bound OKLB) as [lb ELB].
     destruct (eval_upper_bound_no params upper_bound OKUB) as [ub EUB].
@@ -704,12 +712,12 @@ Module Extract (Import M:BASEMEM(ZNum))
     unfold constrain_params in H.
     destruct (split_big_vect _ _ vect) as [elts[z[params' ?]]].
     subst.
-    assert' (params = params').
-    Case "Assert".
+    assert (params = params').
+    (* Case "Assert". *)
       apply Pol_intersection_Included_l in H.
       apply poly_containing_params_drop_1 in H.
       rewrite Vdrop_p_app in H. auto.
-    End_of_assert.
+    (* End_of_assert. *)
     subst.
     apply Pol_intersection_Included_r in H.
     unfold build_poly_for_Loop in H.
@@ -730,15 +738,15 @@ Module Extract (Import M:BASEMEM(ZNum))
     apply in_pol_in_constrain_params in H1.
     eapply bp_in_poly_in_elts in H1.
     rewrite Vtake_p_app in H1.
-    assert' (In z (list_of_Z_between lb ub)) as INZ.
-      Case "Assert: INZ".
+    assert (In z (list_of_Z_between lb ub)) as INZ.
+      (* Case "Assert: INZ". *)
       apply list_of_Z_between_correct. lia.
-    End_of_assert INZ.
+    (* End_of_assert INZ. *)
     remember (list_of_Z_between lb ub) as loz. clear Heqloz.
     clear dependent lb. clear dependent ub.
-    induction' loz as [|z' loz]; inv INZ; simpl;
+    induction loz as [|z' loz]; inv INZ; simpl;
     rewrite in_app_iff; auto.
-    Case "cons z' loz".
+    (* Case "cons z' loz". *)
     left.
     apply in_map_iff. eexists; eauto.
   Qed.
@@ -885,10 +893,10 @@ Module Extract (Import M:BASEMEM(ZNum))
       instruction_list_semantics l2 mem2 mem3.
   Proof.
     intro l1.
-    induction' l1 as [|i l1]; intros * INSTR; simpl in *.
-    Case "nil".
+    induction l1 as [|i l1]; intros * INSTR; simpl in *.
+    (* Case "nil". *)
       exists mem1. split; auto. constructor.
-    Case "cons i l1".
+    (* Case "cons i l1". *)
       inv INSTR.
       edestruct IHl1 as [mem2' [? ?]]; eauto.
       eexists; split; eauto.
@@ -900,11 +908,11 @@ Module Extract (Import M:BASEMEM(ZNum))
     instruction_list_semantics l2 mem2 mem3 ->
     instruction_list_semantics (l1++l2) mem1 mem3.
   Proof.
-    intro l1; induction' l1 as [|i1 l1]; intros * INSTRSEM1 INSTRSEM2;
+    intro l1; induction l1 as [|i1 l1]; intros * INSTRSEM1 INSTRSEM2;
       simpl in *.
-    Case "nil".
+    (* Case "nil". *)
       inv INSTRSEM1; auto.
-    Case "cons i1 l1".
+    (* Case "cons i1 l1". *)
       inv INSTRSEM1; econstructor; eauto.
   Qed.
 
@@ -925,8 +933,8 @@ Module Extract (Import M:BASEMEM(ZNum))
 
     remember (bp_elts pi_poly0 params) as elts. clear Heqelts.
 
-    induction' elts as [|ctxt elts]; simpl; auto.
-    Case "cons ctxt elts".
+    induction elts as [|ctxt elts]; simpl; auto.
+    (* Case "cons ctxt elts". *)
       simpl. f_equal; auto.
       unfold raise_time_stamp_instr. simpl.
       f_equal.
@@ -959,19 +967,19 @@ Module Extract (Import M:BASEMEM(ZNum))
   Proof.
     intros SORTED PERMUT.
     split.
-    Case "Sorted".
+    (* Case "Sorted". *)
       clear PERMUT.
-      induction' SORTED; simpl; constructor; auto.
-      SCase "Sorted_cons".
-      clear' - H.
-      induction' H; constructor; auto.
-      SSCase "HdRel_cons".
+      induction SORTED; simpl; constructor; auto.
+      (* SCase "Sorted_cons". *)
+      clear - H.
+      induction H; constructor; auto.
+      (* SSCase "HdRel_cons". *)
         unfold raise_time_stamp_instr, instruction_point_lt in *.
         destruct a; destruct b. simpl in *.
-        clear' - H.
+        clear - H.
         apply TSLT_eq. auto.
-    Case "Permutation".
-      clear' - PERMUT.
+    (* Case "Permutation". *)
+      clear - PERMUT.
       rewrite flatten_map_expand.
       apply Permutation_map. auto.
   Qed.
@@ -1042,10 +1050,10 @@ Module Extract (Import M:BASEMEM(ZNum))
     extract_statement_list pos st_lst =
       OK (flatten raised_pol_instr_lst_lst).
   Proof.
-    intros ESL; induction' ESL; simpl.
-    Case "ESLI1_nil".
+    intros ESL; induction ESL; simpl.
+    (* Case "ESLI1_nil". *)
       reflexivity.
-    Case "ESLI2_cons".
+    (* Case "ESLI2_cons". *)
       rewrite H0. simpl_do. rewrite IHESL. simpl_do.
       f_equal.
       f_equal; auto.
@@ -1054,7 +1062,7 @@ Module Extract (Import M:BASEMEM(ZNum))
   Lemma flatten_app {A} (l1 l2: list (list A)):
     flatten (l1 ++ l2) = flatten l1 ++ flatten l2.
   Proof.
-    induction' l1; simpl; auto.
+    induction l1; simpl; auto.
     rewrite IHl1. apply app_assoc.
   Qed.
 
@@ -1090,17 +1098,17 @@ Module Extract (Import M:BASEMEM(ZNum))
     Forall (Forall (first_dim_gt pos)) instr_point_lst_lst.
   Proof.
     intros ESL.
-    induction' ESL; simpl; intro INF; auto.
-    Case "ESLI2_cons".
+    induction ESL; simpl; intro INF; auto.
+    (* Case "ESLI2_cons". *)
       constructor.
-      SCase "Head".
+      (* SCase "Head". *)
         eapply Permutation_Forall;[|eauto].
         subst.
         rewrite map_map.
         apply Forall_flatten.
-        clear' - INF. 
-        induction' pol_instr_lst; simpl; auto.
-        SSCase "cons".
+        clear - INF. 
+        induction pol_instr_lst; simpl; auto.
+        (* SSCase "cons". *)
           constructor; auto.
           rewrite raise_time_stamp_expand_poly_instr.
           rewrite Forall_forall.
@@ -1108,7 +1116,7 @@ Module Extract (Import M:BASEMEM(ZNum))
           rewrite in_map_iff in IN. destruct IN as [?[? ?]].
           subst. unfold first_dim_gt.
           destruct x0. simpl. constructor; assumption.
-      SCase "Tail".
+      (* SCase "Tail". *)
         apply IHESL. unfold Zsucc. lia.
   Qed.
 
@@ -1128,10 +1136,10 @@ Module Extract (Import M:BASEMEM(ZNum))
     intros EXTRACT * SEM [raised_pol_instr_lst_lst [instr_point_lst_lst ESL]].
     exists (flatten instr_point_lst_lst).
     constructor; [|constructor].
-    Case "Sorted".
-      clear' - ESL.
-      induction' ESL; simpl; auto.
-      SCase "ESLI2_cons".
+    (* Case "Sorted". *)
+      clear - ESL.
+      induction ESL; simpl; auto.
+      (* SCase "ESLI2_cons". *)
         apply ESL_inv1_Forall_first_dim_gt with (pos := pos) in ESL;
           [|unfold Zsucc; lia].
         subst.
@@ -1140,22 +1148,22 @@ Module Extract (Import M:BASEMEM(ZNum))
           eapply Permutation_Forall; [|eauto].
           apply Forall_flatten.
           rewrite Forall_forall.
-          clear'.
+          clear.
           intros instr_point_lst IN.
           rewrite in_map_iff in IN.
           destruct IN as [? [? ?]].
           subst.
           rewrite raise_time_stamp_expand_poly_instr.
           rewrite Forall_forall.
-          clear'.
+          clear.
           intros instr_point_lst IN.
           rewrite in_map_iff in IN.
           destruct IN as [? [? ?]].
           subst. destruct x0; compute. constructor.
 
-        clear' - H2 ESL IHESL FA.
-        induction' instr_point_lst as [|ip instr_point_lst]; simpl; auto.
-        SSCase "cons ip instr_point_lst".
+        clear - H2 ESL IHESL FA.
+        induction instr_point_lst as [|ip instr_point_lst]; simpl; auto.
+        (* SSCase "cons ip instr_point_lst". *)
           inv H2.
           specialize (IHinstr_point_lst H1).
           inv FA.
@@ -1163,27 +1171,27 @@ Module Extract (Import M:BASEMEM(ZNum))
           inv H3; auto; simpl; [|constructor; auto].
           apply Forall_flatten in ESL.
           inv ESL; constructor.
-          clear' - H2 H0.
+          clear - H2 H0.
           unfold first_dim_eq, first_dim_gt, instruction_point_lt in *.
           destruct ip; destruct x; simpl in *.
           inv H2; inv H0. constructor. auto.      
-    Case "Permutation".
+    (* Case "Permutation". *)
       erewrite ESL_inv1_extract_statement_list in EXTRACT; eauto.
       clean. clear SEM.
-      induction' ESL.
-      SCase "ESLI1_nil".
+      induction ESL.
+      (* SCase "ESLI1_nil". *)
         simpl in *. clean.
-      SCase "ESLI2_cons".
+      (* SCase "ESLI2_cons". *)
         simpl.
         rewrite map_app. rewrite flatten_app.
         apply Permutation_app; auto.
 
-    Case "instruction_list_semantics".
-      clear' - ESL.
-      induction' ESL; simpl.
-      SCase "ESLI1_nil".
+    (* Case "instruction_list_semantics". *)
+      clear - ESL.
+      induction ESL; simpl.
+      (* SCase "ESLI1_nil". *)
         constructor.
-      SCase "ESLI2_cons".
+      (* SCase "ESLI2_cons". *)
         eapply instruction_list_semantics_app2; eauto.
   Qed.
   Inductive hd_ge z : list Z -> Prop :=
@@ -1294,10 +1302,10 @@ Module Extract (Import M:BASEMEM(ZNum))
       poly_list_semantics global_depth instrs_lst
        ctxt sorted_instruction_points mem1 mem2*).
   Proof.
-    Case "extract_statement_correct".
+    (* Case "extract_statement_correct". *)
       intros.
-      destruct' st; simpl in H; unfold not_implemented in *; clean.
-      SCase "Loop".
+      destruct st; simpl in H; unfold not_implemented in *; clean.
+      (* SCase "Loop". *)
         destruct (check_bound lower_bound) as [CLB | _]; clean.
         destruct (check_bound upper_bound) as [CUB | _]; clean.
         inv H0; clean.
@@ -1310,14 +1318,14 @@ Module Extract (Import M:BASEMEM(ZNum))
         [|solve [destruct ASSERT as [sip [? ?]]; exists sip; auto]].
         prog_dos.
         specialize extract_statement_list_ok with (1 := Heq_do).
-        assert' (forall ctxt mem1 mem2,
+        assert (forall ctxt mem1 mem2,
           semantics_statement_list ctxt body mem1 mem2 ->
           exists sorted_instruction_points,
             poly_list_semantics (S global_depth) lpi
             ctxt sorted_instruction_points mem1 mem2) as ESL_correct.
-        SSCase "Assert: ESL_correct".
+        (* SSCase "Assert: ESL_correct". *)
           intros. eapply extract_statement_list_ok_correct; eauto.
-        End_of_assert ESL_correct.
+        (* End_of_assert ESL_correct. *)
         clear extract_statement_list_ok extract_statement_correct.
         clear Heq_do.
         unfold build_boxed_poly_for_Loop.
@@ -1336,7 +1344,7 @@ Module Extract (Import M:BASEMEM(ZNum))
         unfold list_of_Z_between.
         revert dependent mem2. revert mem1.
         functional induction (list_of_Z_between_aux ub lb); intros.
-        SSCase "lb <= ub".
+        (* SSCase "lb <= ub". *)
           inv H10; clean;[simpl in *; lia|].
           unfold Zsucc in *.
           specialize (IHl _ _ H6).
@@ -1350,33 +1358,33 @@ Module Extract (Import M:BASEMEM(ZNum))
                    ip_time_stamp := lb :: ip.(ip_time_stamp)|}) fst_part) ++
               snd_part).
           repeat (apply conj).
-          S3Case "list_forall".
+          (* S3Case "list_forall". *)
             apply list_forall_list_forall_app.
-            S4Case "fst_part".
-              clear'.
+            (* S4Case "fst_part". *)
+              clear.
               induction fst_part; simpl; constructor; auto.
               constructor. lia.
-            S4Case "snd_part".
+            (* S4Case "snd_part". *)
               eapply list_forall_imply; [|eassumption].
-              simpl. clear'. intros ip HDGE. inv HDGE. constructor. lia.
-          S3Case "Sorted".
-            clear' - H H4 H2.
-            induction' fst_part as [|ip1 fst_part]; simpl; auto.
-            S4Case "cons ip1 fst_part".
+              simpl. clear. intros ip HDGE. inv HDGE. constructor. lia.
+          (* S3Case "Sorted". *)
+            clear - H H4 H2.
+            induction fst_part as [|ip1 fst_part]; simpl; auto.
+            (* S4Case "cons ip1 fst_part". *)
               inv H.
               constructor; auto.
-              destruct' fst_part as [|ip2 fst_part]; simpl.
-              S5Case "nil".
-                destruct' snd_part as [|ip2 snd_part]; simpl; auto.
-                S6Case "cons ip2 snd_part".
+              destruct fst_part as [|ip2 fst_part]; simpl.
+              (* S5Case "nil". *)
+                destruct snd_part as [|ip2 snd_part]; simpl; auto.
+                (* S6Case "cons ip2 snd_part". *)
                   constructor.
                   inv H2. destruct ip2. red. simpl in *.
                   inv H1. apply TSLT_lt. lia.
-              S5Case "cons ip2 fst_part".
+              (* S5Case "cons ip2 fst_part". *)
                 constructor. red. simpl. apply TSLT_eq.
                 inv H5. red in H0. assumption.
-          S3Case "Permutation".
-            clear' - H0 H5.
+          (* S3Case "Permutation". *)
+            clear - H0 H5.
             simpl.
             erewrite map_ext.
             Focus 2. intros.
@@ -1386,21 +1394,21 @@ Module Extract (Import M:BASEMEM(ZNum))
             unfold expand_poly_instr in H0.
             Focus 1.
             eapply foo; eauto.
-            clear'.
-            induction' lpi as [|pi lpi].
-            S4Case "nil".
+            clear.
+            induction lpi as [|pi lpi].
+            (* S4Case "nil". *)
               simpl. reflexivity.
-            S4Case "cons pi lpi".
+            (* S4Case "cons pi lpi". *)
               simpl. rewrite IHlpi.
-              simpl_do. clear'. f_equal.
+              simpl_do. clear. f_equal.
               f_equal. f_equal.
               rewrite  map_map. simpl. rewrite map_map. simpl. apply map_ext.
               unfold make_context_ext. simpl.
               intros; f_equal. apply cast_pi_transformation_id.
               f_equal.
               rewrite Vprod_Vcons. simpl. unfold Context in *.
-              clear'.
-              destruct pi. simpl in *. clear'.
+              clear.
+              destruct pi. simpl in *. clear.
               match goal with
                 | |-
                   context[〈?v1 +++ ?v2, ?v3 +++ ?v4〉] =>
@@ -1410,48 +1418,48 @@ Module Extract (Import M:BASEMEM(ZNum))
               simpl in VPA. rewrite VPA. clear VPA.
               simpl_vect. simpl; lia.
 
-              destruct pi; simpl in *; clear'.
+              destruct pi; simpl in *; clear.
               rewrite cast_list_cast_A. unfold apply_schedule.
-              induction' pi_schedule0; simpl; auto.
-              S5Case "cons".
+              induction pi_schedule0; simpl; auto.
+              (* S5Case "cons". *)
                 f_equal; auto.
-                clear'. unfold cast_A.
-                dest_vects. clear'. dest_eq_rect. simpl.
+                clear. unfold cast_A.
+                dest_vects. clear. dest_eq_rect. simpl.
                 rewrite snoc_app; auto.
               
               rewrite map_map. rewrite map_map. apply map_ext.
               intros. reflexivity.
 
-          S3Case "instruction_list_semantics".
+          (* S3Case "instruction_list_semantics". *)
             eapply instruction_list_semantics_app2; eauto.
-            clear' - H1.
+            clear - H1.
             induction H1; econstructor; eauto.
             inv H; simpl. econstructor; eauto.
           
-        SSCase "ub < lb".
+        (* SSCase "ub < lb". *)
           simpl.
           inv H10; clean;[| simpl in *; lia].
           exists (@nil Instruction_Point).
           repeat constructor.
-          clear'. induction lpi; auto.
+          clear. induction lpi; auto.
 
-      SCase "Instr".
+      (* SCase "Instr". *)
       eexists; econstructor; [|econstructor]; simpl;[|reflexivity|].
-      SSCase "Sorted".
+      (* SSCase "Sorted". *)
         repeat constructor.
-      SSCase "instruction_list_semantics".
+      (* SSCase "instruction_list_semantics". *)
         econstructor;[|econstructor].
         unfold make_context_ext.
         rewrite V0_Vapp.
         inv H0. clean.
         econstructor; simpl; clean; eauto.
 
-    Case "extract_statement_list_ok".
+    (* Case "extract_statement_list_ok". *)
       revert instrs_lst pos.
-      destruct' st_lst as [|st st_lst]; intros * EXTRACT * SEM; inv SEM; clean.
-      SCase "stl_nil".
+      destruct st_lst as [|st st_lst]; intros * EXTRACT * SEM; inv SEM; clean.
+      (* SCase "stl_nil". *)
         repeat econstructor.
-      SCase "stl_cons st st_lst".
+      (* SCase "stl_cons st st_lst". *)
         simpl in EXTRACT.
         prog_dos.
         edestruct extract_statement_list_ok as [?[??]]; eauto.
@@ -1480,8 +1488,8 @@ Module Extract (Import M:BASEMEM(ZNum))
     prog_dos.
     pose proof (extract_statement_list_ok _ _ _ _ Heq_do).
 
-    destruct' (make_vector prog.(prog_nbr_global_parameters) params) as [Vparams|] _eqn.
-    Case "Some Vparams".
+    destruct (make_vector prog.(prog_nbr_global_parameters) params) as [Vparams|] _eqn.
+    (* Case "Some Vparams". *)
       inv PROGSEM.
       assert (Vparams0 = Vparams) by congruence. subst.
       clear H0.
@@ -1491,7 +1499,7 @@ Module Extract (Import M:BASEMEM(ZNum))
       destruct H0 as [? [? ?]].
       econstructor; simpl; eauto.
 
-    Case "None".
+    (* Case "None". *)
     inv PROGSEM. rewrite H0 in Heqo. clean.
   Qed.
 

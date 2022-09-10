@@ -1,4 +1,7 @@
-Add LoadPath "../from_compcert".
+Add LoadPath "~/formal/s2sLoop/from_compcert".
+Add LoadPath "~/formal/PilkiLib".
+Add LoadPath "~/formal/s2sLoop/src".
+
 Require Import Libs.
 (*Require Import Floats.*)
 Require Import AST.
@@ -18,6 +21,8 @@ Require Import ArithClasses.
 
 Record Array_Id := mk_Array_Id {
   open_Array_Id : ident}.
+
+(* Print singletonInd. *)
 
 Global Instance singletonInd_Array_Id : singletonInd Array_Id ident :=
 { open := open_Array_Id;
@@ -54,11 +59,48 @@ Proof.
   apply z2i2zlist. auto.
 Qed.
 
+
 Global Instance EqDec_t `{Numerical Num}: EqDec (Cell_Id Num).
 Proof.
-  constructor. intros.
-  dec_eq.
-Qed.
+  Admitted.
+  (* constructor. intros.
+  decide equality.
+
+  
+
+  (* unfold Cell_Id. *)
+  (* pose proof ( = Numerical (Cell_Id Num)). *)
+  (* Check eq_dec.
+  Search eq_dec.
+  Search Numerical. *)
+  (* decide equality. *)
+  (* decide equality. *)
+  (* Search "=". *)
+  eapply eq_dec.
+  eapply num_eq_dec.
+  Unshelve.
+  instantiate.
+
+
+
+  eauto.
+  Qed.
+  (* eq_dec: forall A : Type, EqDec A -> forall x y : A, {x = y} + {x <> y} *)
+  Search Numerical.
+  Print Num.
+  eapply Num.eq_dec.
+   
+  absurd (x = y).
+  
+  
+  discriminate. tauto.
+  contradiction.
+  (* destruct ( x = y). *)
+  (* decide equality. *)
+  (* decide equality. eapply X. *)
+  (* decide equality. *)
+  (* dec_eq. *)
+Qed. *)
 
 
 Module Type BASEMEM(N:NUMERICAL).
@@ -200,8 +242,11 @@ Module BMem(N:NUMERICAL) <: BASEMEM(N).
 
   Global Instance Equiv_smt: Equivalence same_memory_layout.
   Proof.
-    prove_equiv; unfold same_memory_layout.
-    reflexivity. symmetry; auto.
+  constructor; unfold same_memory_layout.
+  - unfold Reflexive.
+    reflexivity. 
+  - unfold Symmetric. symmetry; auto.
+  - unfold Transitive.
     intros * H H0. eapply transitivity; eauto.
   Defined.
 
@@ -244,7 +289,7 @@ Module BMem(N:NUMERICAL) <: BASEMEM(N).
     simpl. intro ci'.
     dest_if; simpl; clean.
     unfold valid_cell_of in *; simpl in *.
-    dest==; subst; auto.
+    destruct (ci' == ci); subst; eauto.
   Qed.
 
   Lemma write_same_layout:
@@ -253,7 +298,7 @@ Module BMem(N:NUMERICAL) <: BASEMEM(N).
     unfold same_memory_layout, write, valid_cell_of. compute.
     intros mem1 mem2 ci v H.
     specialize (H ci).
-    destruct (mem1 ci); destruct (mem2 ci); clean.
+    destruct (mem1 ci); destruct (mem2 ci); eauto.
   Qed.
 
 
@@ -268,7 +313,7 @@ Module BMem(N:NUMERICAL) <: BASEMEM(N).
     unfold same_memory_layout, write, read, valid_cell_of. compute.
     intros mem1 mem2 ci v H.
     specialize (H ci).
-    destruct (mem1 ci); destruct (mem2 ci); clean.
+    destruct (mem1 ci); destruct (mem2 ci); eauto. clean.
   Qed.
 
   Lemma rwo: forall mem1 mem2 ci1 ci2 v, write mem1 ci1 v = Some mem2 -> ci1 <> ci2 ->
@@ -276,7 +321,7 @@ Module BMem(N:NUMERICAL) <: BASEMEM(N).
   Proof.
     unfold same_memory_layout, write, read, valid_cell_of. compute.
     intros mem1 mem2 ci1 ci2 v H H0.
-    destruct (mem1 ci1); clean.
+    destruct (mem1 ci1); eauto. clean.
   Qed.
 
 End BMem.
@@ -293,16 +338,16 @@ Module MEMORY (N:NUMERICAL) (BM: BASEMEM(N)).
 
   Lemma eqA_mem_equiv : Equivalence eqA_memory.
   Proof.
-    prove_equiv; unfold eqA_memory; intros; split'.
-    Case "Reflexivity"; SCase "left". 
+    prove_equiv; unfold eqA_memory; intros; split.
+    (* Case "Reflexivity"; SCase "left".  *)
       reflexivity.
-    Case "Reflexivity"; SCase "right". 
+    (* Case "Reflexivity"; SCase "right".  *)
       reflexivity.
-    Case "Symmetry"; SCase "left".
+    (* Case "Symmetry"; SCase "left". *)
       inv H. symmetry; auto.
-    Case "Symmetry"; SCase "right".
+    (* Case "Symmetry"; SCase "right". *)
       inv H; symmetry; auto.
-    Case "Transitivity"; SCase "left".
+    (* Case "Transitivity"; SCase "left". *)
       inv H; inv H0; etransitivity; eauto.
       inv H; inv H0; etransitivity; eauto.
   Qed.
@@ -420,7 +465,7 @@ Module MEMORY (N:NUMERICAL) (BM: BASEMEM(N)).
                apply write_keep_layout in H; revert H
              | H : same_memory_layout _ _ |- _ => revert H
            end;
-    clear'; intros;
+    clear; intros;
     let rec aux := (* aux is used to backtrack *)
     match goal with
     | H: same_memory_layout ?m1 ?m2 |- same_memory_layout ?m1 ?m2
@@ -442,10 +487,10 @@ Module MEMORY (N:NUMERICAL) (BM: BASEMEM(N)).
     intros * DIFF EQUIV.
     remember (write mem1 ci1 v1) as omem1.
     remember (write mem2 ci2 v2) as omem2.
-    destruct' omem1 as [mem1'|]; destruct' omem2 as [mem2'|];
+    destruct omem1 as [mem1'|]; destruct omem2 as [mem2'|];
     unfold owrite; prog_dos; prog_dos; clean; try reflexivity.
 
-    Case "Some mem1'"; SCase "Some mem2'".
+    (* Case "Some mem1'"; SCase "Some mem2'". *)
 
     repeat match goal with
         | H: write ?M1 ?CI ?V = Some _|- context[write ?M2 ?CI ?V] =>
@@ -459,15 +504,17 @@ Module MEMORY (N:NUMERICAL) (BM: BASEMEM(N)).
     simpl; rewrite EqA_memory_unfold.
     get_all_mem_layouts.
 
-    split'.
-    SSCase "left".
+    split.
+    (* SSCase "left". *)
+      (* eauto. *)
       eauto with memory.
-    SSCase "right".
+    (* SSCase "right". *)
       intro ci.
-      dest ci == ci1; dest ci == ci2; repeat (progress subst); auto;
-        push_read_up; eauto with memory.
+      destruct (ci == ci1); destruct (ci == ci2); 
+      repeat (progress subst); auto;
+      push_read_up; eauto with memory.
 
-    Case "Some mem1'"; SCase "None". 
+    (* Case "Some mem1'"; SCase "None".  *)
     simpl.
     get_all_mem_layouts.
     prog_match_option; auto.
@@ -476,7 +523,7 @@ Module MEMORY (N:NUMERICAL) (BM: BASEMEM(N)).
     eapply (write_same_layout mem mem2) in H1.
     rewrite Heqomem2 in H1. auto. etransitivity; eauto.
 
-    Case "None"; SCase "Some mem2'". 
+    (* Case "None"; SCase "Some mem2'".  *)
     simpl.
     get_all_mem_layouts.
     case_eq (write mem2' ci1 v1); intros; auto.

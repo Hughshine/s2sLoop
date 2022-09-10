@@ -1,4 +1,6 @@
-Add LoadPath "../from_compcert".
+Add LoadPath "~/formal/s2sLoop/from_compcert".
+Add LoadPath "~/formal/PilkiLib".
+Add LoadPath "~/formal/s2sLoop/src".
 Require Import Libs.
 Require Import Errors.
 Require Import Polyhedra.
@@ -107,11 +109,11 @@ Module Tilling (Import M:BASEMEM(ZNum))
      unfold mk_tilled_vect, Vnth. dest_vects.
      simpl. clear Lv depth.
      revert tc a m tc' v.
-     induction' n as [|n]; intros.
-     Case "O".
+     induction n as [|n]; intros.
+     (* Case "O". *)
        simpl in *. subst.
        simpl. reflexivity.
-     Case "S n".
+     (* Case "S n". *)
        destruct tc; simpl in *; clean.
        eauto.
    Qed.
@@ -138,26 +140,26 @@ Module Tilling (Import M:BASEMEM(ZNum))
      pose proof (bp_elts_NoDup _ _ bpol params).
      remember_no_eq (bp_elts bpol params) as vs.
      clear -H vs.
-     induction' vs as [|v vs].
-     Case "nil".
+     induction vs as [|v vs].
+     (* Case "nil". *)
        constructor.
-     Case "cons v vs".
+     (* Case "cons v vs". *)
        inv H. constructor; auto.
        intro. apply H2.
-       clear' - H.
-       induction' vs as [|v' vs].
-       SCase "nil".
+       clear - H.
+       induction vs as [|v' vs].
+       (* SCase "nil". *)
          inv H.
-       SCase "cons v' vs".
-         destruct' H; auto.
-         SSCase "or_introl".
+       (* SCase "cons v' vs". *)
+         destruct H; auto.
+         (* SSCase "or_introl". *)
            left.
            match type of H with
              | ?V1 = ?V2 =>
                assert (Vtake_p depth V1 = Vtake_p depth V2) by congruence
            end.
            simpl_vect in H0. auto.
-         SSCase "or_intror".
+         (* SSCase "or_intror". *)
            right. apply IHvs. auto.
    Qed.
   Hint Rewrite Vnth_at_val_prod: vect.
@@ -168,23 +170,24 @@ Module Tilling (Import M:BASEMEM(ZNum))
      apply bp_in_elts_in_poly in IN.
      unfold mk_tilled_poly.
      apply Pol_Included_intersertion.
-     Case "In mk_constraints_tile_dims".
-       clear'.
-       assert' (forall tc' n,
+     (* Case "In mk_constraints_tile_dims". *)
+       clear.
+       assert (forall tc' n,
          tc' = list_drop n tc ->
          (v +++ mk_tilled_vect tc v) +++ params ∈
          mk_constraints_tile_dims n tc') as GENERALIZED.
-       SCase "Assert: GENERALIZED".
+       (* SCase "Assert: GENERALIZED". *)
          intro. induction tc' as [| [a m] tc']; intros n DROP.
-         SCase "Assert: GENERALIZED".
+         (* SCase "Assert: GENERALIZED". *)
            simpl. constructor.
-         SCase "Assert: GENERALIZED".
+         (* SCase "Assert: GENERALIZED". *)
          Opaque Zminus Zplus Zmult.
-           simpl. constructor;[|constructor];
+           (* simpl. constructor;[|constructor];
            [ SSCase "satisfy_constraint1"|
              SSCase "satisfy_constraint2"|
-             SSCase "tail"].
-           SSCase "satisfy_constraint1".
+             SSCase "tail"]. *)
+           (* SSCase "satisfy_constraint1". *)
+           simpl; constructor; [|constructor].
              red. simpl. simpl_vect.
              erewrite Vnth_mk_tilled_vect; eauto.
              replace (Zneg a) with (- Zpos a) by reflexivity.
@@ -194,7 +197,7 @@ Module Tilling (Import M:BASEMEM(ZNum))
              pose proof (Z_mult_div_ge (Vnth v m) z H).
              unfold ZNum.Numerical_Num in *.
              unfold Inhab_num in *. unfold Inhabited_Z in *. simpl in *. lia.
-           SSCase "satisfy_constraint2".
+           (* SSCase "satisfy_constraint2". *)
              red; simpl. simpl_vect.
              erewrite Vnth_mk_tilled_vect; eauto.
              remember (Zpos a) as z.
@@ -214,25 +217,25 @@ Module Tilling (Import M:BASEMEM(ZNum))
                  replace X with (-(y mod z)) by lia
              end.
              pose proof (Z_mod_lt y z H). lia.
-           SSCase "tail".
+           (* SSCase "tail". *)
              apply IHtc'.
              remember_no_eq (a,m) as p.
-             clear' - DROP.
+             clear - DROP.
              revert p tc tc' DROP.
-             induction' n as [|n]; intros; auto.
-             S3Case "O".
+             induction n as [|n]; intros; auto.
+             (* S3Case "O". *)
                simpl in *.
                subst. reflexivity.
-             S3Case "S n".
+             (* S3Case "S n". *)
                destruct tc; clean.
                simpl in DROP.
                rewrite (IHn _ _ _ DROP). simpl. reflexivity.
-       End_of_assert GENERALIZED.
+       (* End_of_assert GENERALIZED. *)
          apply GENERALIZED. reflexivity.
-    Case "In map".    
+    (* Case "In map".     *)
       remember_no_eq (bp_poly bpol) as pol.
-      induction' pol as [|c pol]; constructor.
-      SCase "cons c pol".
+      induction pol as [|c pol]; constructor.
+      (* SCase "cons c pol". *)
       inv IN.
       destruct c. unfold satisfy_constraint in *. simpl in *.
       simpl; simpl_vect.
@@ -254,23 +257,23 @@ Module Tilling (Import M:BASEMEM(ZNum))
 
     simpl_vect.
 
-    assert' ((v1+++v3) ∈ constrain_params params (bp_poly bpol)) as IN.
-    Case "Assert: IN".
+    assert ((v1+++v3) ∈ constrain_params params (bp_poly bpol)) as IN.
+    (* Case "Assert: IN". *)
       unfold constrain_params.
       apply Pol_Included_intersertion.
       apply poly_containing_params_drop_1 in H. simpl_vect in H.
       apply poly_containing_params_drop_2. simpl_vect. assumption.
       remember_no_eq (bp_poly bpol) as pol.
-      clear' - H1.
+      clear - H1.
       induction pol as [|c pol]; constructor.
-      SCase "constraint".
+      (* SCase "constraint". *)
         inv H1. unfold satisfy_constraint in *. destruct c. simpl in *.
         Vsplit constr_vect as v1' v2'.
         rewrite V_insert_middle0_ok_l in H2.
         simpl_vect. simpl. apply H2.
-      SCase "rest".
+      (* SCase "rest". *)
         inv H1. apply IHpol; auto.
-    End_of_assert IN.
+    (* End_of_assert IN. *)
       apply bp_in_poly_in_elts in IN.
       simpl_vect in IN.
       clear H1 H.
@@ -283,50 +286,50 @@ Module Tilling (Import M:BASEMEM(ZNum))
       f_equal.
       apply Vnth_inj.
       intros n INF.
-      assert' (Vnth (mk_tilled_vect tc v1) n = Vnth v1 (snd (nth n tc (1%positive, 0%nat))) / Zpos (fst (nth n tc (1%positive, 0%nat))))
+      assert (Vnth (mk_tilled_vect tc v1) n = Vnth v1 (snd (nth n tc (1%positive, 0%nat))) / Zpos (fst (nth n tc (1%positive, 0%nat))))
         as EQ.
-      Case "Assert: EQ".
-        clear' - INF.
+      (* Case "Assert: EQ". *)
+        clear - INF.
         unfold mk_tilled_vect.
         unfold Vnth at 1. simpl.
         revert n INF.
-        induction' tc as [|[p m] tc]; intros; simpl in *.
-        SCase "nil".
+        induction tc as [|[p m] tc]; intros; simpl in *.
+        (* SCase "nil". *)
           omegaContradiction.
-        SCase "cons (p, m) tc".
+        (* SCase "cons (p, m) tc". *)
           destruct n as [|n].
           simpl. reflexivity.
           apply IHtc. omega.
-      End_of_assert EQ.
+      (* End_of_assert EQ. *)
       rewrite EQ. clear EQ.
 
-      assert' (forall i, (v1 +++ v2) +++ v3 ∈ mk_constraints_tile_dims i (list_drop i tc)).
-        induction' i as [|i].
-        SCase "O".
+      assert (forall i, (v1 +++ v2) +++ v3 ∈ mk_constraints_tile_dims i (list_drop i tc)).
+        induction i as [|i].
+        (* SCase "O". *)
         simpl. auto.
-        SCase "S i".
+        (* SCase "S i". *)
         replace (list_drop (S i) tc) with (tail (list_drop i tc)).
         remember_no_eq (list_drop i tc) as l.
         destruct l; simpl in *; auto. destruct p.
         inv IHi. inv H3. auto.
-        clear'.
+        clear.
         revert tc.
-        induction' i as [|i]; intros; auto.
+        induction i as [|i]; intros; auto.
         destruct tc; simpl. reflexivity.
         rewrite IHi. reflexivity.
-      End_of_assert.
+      (* End_of_assert. *)
       clear H0.
       specialize (H n).
-      assert' ((list_drop n tc) = (nth n tc (1%positive, 0%nat)) :: (tl (list_drop n tc))).
-        clear' - INF.
+      assert ((list_drop n tc) = (nth n tc (1%positive, 0%nat)) :: (tl (list_drop n tc))).
+        clear - INF.
         revert tc INF.
-        induction' n as [|n]; intros.
-        SCase "O".
+        induction n as [|n]; intros.
+        (* SCase "O". *)
           destruct tc; auto. simpl in INF. omegaContradiction.
-        SCase "S n".
+        (* SCase "S n". *)
           destruct tc; simpl in *. omegaContradiction.
           apply IHn. omega.
-      End_of_assert.
+      (* End_of_assert. *)
         rewrite H0 in H.
         simpl in H.
         destruct (nth n tc (1%positive, 0%nat)) as [a' m]; simpl in *.
@@ -398,23 +401,23 @@ Module Tilling (Import M:BASEMEM(ZNum))
     intros.
     unfold mk_tilled_poly_prog in H.
     prog_dos.
-    assert'
+    assert
       (forall Vparams,
         flatten (map (expand_poly_instr Vparams) prog1.(pp_poly_instrs)) = 
         flatten (map (expand_poly_instr Vparams) instrs)) as FLATTEQ.
-    Case "Assert: FLATTEQ".
+    (* Case "Assert: FLATTEQ". *)
       destruct prog1. simpl in *.
       revert tcs instrs Heq_do.
-      clear'.
-      induction' pp_poly_instrs0 as [| instr ppinstrs]; intros; simpl in *;
+      clear.
+      induction pp_poly_instrs0 as [| instr ppinstrs]; intros; simpl in *;
         destruct tcs as [|tc tcs]; clean.
-      SCase "cons instr ppinstrs".
+      (* SCase "cons instr ppinstrs". *)
         prog_dos.
         simpl. f_equal.
         apply expand_tilled_poly_instr.
         eapply IHppinstrs; eauto.
-    End_of_assert FLATTEQ.
-    split'; intro SEM;
+    (* End_of_assert FLATTEQ. *)
+    split; intro SEM;
     inv SEM; econstructor; eauto; simpl.
     rewrite <- FLATTEQ. auto.
     rewrite FLATTEQ. auto.

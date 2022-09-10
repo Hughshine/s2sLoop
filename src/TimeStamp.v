@@ -1,4 +1,6 @@
-Add LoadPath "../from_compcert".
+Add LoadPath "~/formal/s2sLoop/from_compcert".
+Add LoadPath "~/formal/PilkiLib".
+Add LoadPath "~/formal/s2sLoop/src".
 Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Classes.RelationClasses.
 
@@ -61,10 +63,10 @@ Hint Resolve not_all_0_gt not_all_0_lt not_lt_gt: timestamp.
 Lemma time_stamp_0_trichotomy (ts: Time_Stamp):
   {time_stamp_lt_0 ts}+{time_stamp_all_0 ts}+{time_stamp_gt_0 ts}.
 Proof.
-  induction' ts as [|z ts].
-  Case "nil".
+  induction ts as [|z ts].
+  (* Case "nil". *)
     auto with timestamp.
-  Case "cons z ts".
+  (* Case "cons z ts". *)
     destruct (Ztrichotomy_inf z 0) as [[?|?]|?]; subst; auto with timestamp.
     destruct IHts as [[?|?]|?]; auto with timestamp.
 Qed.
@@ -83,20 +85,20 @@ Instance TSE_eq: Equivalence time_stamp_eq.
 Proof.
   prove_equiv.
 
-  Case "Reflexivity".
-    intro x; induction' x; auto with timestamp.
-  Case "Symmetry".
+  (* Case "Reflexivity". *)
+    intro x; induction x; auto with timestamp.
+  (* Case "Symmetry". *)
     intro x; induction x as [|z x]; intros y EQ; inv EQ; auto with timestamp.
-  Case "Transitivity".
+  (* Case "Transitivity". *)
   intros * EQxy. revert z.
-  induction' EQxy; intros * EQyz; inv EQyz; auto with timestamp.
-  SCase "TSE_nil_r".
+  induction EQxy; intros * EQyz; inv EQyz; auto with timestamp.
+  (* SCase "TSE_nil_r". *)
     revert dependent z.
     induction H; intros; inv H0; auto with timestamp.
-  SCase "TSE_nil_l".
+  (* SCase "TSE_nil_l". *)
     inv H. constructor. constructor.
     revert dependent l2; induction H2; intros; inv H0; auto with timestamp.
-  SCase "TSE_cons".
+  (* SCase "TSE_cons". *)
     inv H. constructor. constructor. clear IHEQxy.
     revert dependent l1; induction H1; intros; inv EQxy; auto with timestamp.
 Qed.
@@ -176,16 +178,16 @@ Qed.
 Lemma time_stamp_lt_trichotomy: forall (ts1 ts2: Time_Stamp),
   {time_stamp_lt ts1 ts2} + {time_stamp_eq ts1 ts2} + {time_stamp_lt ts2 ts1}.
 Proof.
-  induction' ts1 as [|z1 ts1].
-  Case "nil".
+  induction ts1 as [|z1 ts1].
+  (* Case "nil". *)
     intro ts2.
     destruct (time_stamp_0_trichotomy ts2) as [[|]|]; auto with timestamp.
-  Case "cons z1 ts1".
-    intros ts2; destruct' ts2 as [|z2 ts2].
-    SCase "nil".
+  (* Case "cons z1 ts1". *)
+    intros ts2; destruct ts2 as [|z2 ts2].
+    (* SCase "nil". *)
       destruct (Ztrichotomy_inf 0 z1) as [[|]|]; subst; auto 6 with timestamp.
       destruct (time_stamp_0_trichotomy ts1) as [[|]|]; auto with timestamp.
-    SCase "cons z2 ts2".
+    (* SCase "cons z2 ts2". *)
       destruct (Ztrichotomy_inf z1 z2) as [[|]|]; subst; auto with timestamp.
         destruct (IHts1 ts2) as [[|]|]; auto with timestamp.
 Qed.
@@ -195,10 +197,10 @@ Lemma time_stamp_lt_lt_0: forall ts1 ts2,
   time_stamp_lt_0 ts1.
 Proof.
   intros * LT LT0. revert dependent ts1.
-  induction' LT0; intros; inv LT; auto with timestamp.
-  Case "TSL0_0".
+  induction LT0; intros; inv LT; auto with timestamp.
+  (* Case "TSL0_0". *)
   inv H; auto with timestamp. lia.
-  Case "TSL0_lt".
+  (* Case "TSL0_lt". *)
   inv H0;  lia.
   constructor; lia.
 Qed.
@@ -208,10 +210,10 @@ Lemma time_stamp_gt_gt_0: forall ts1 ts2,
   time_stamp_gt_0 ts2.
 Proof.
   intros * GT0 GT. revert dependent ts2.
-  induction' GT0; intros; inv GT; auto with timestamp.
-  Case "TSG0_0".
+  induction GT0; intros; inv GT; auto with timestamp.
+  (* Case "TSG0_0". *)
   inv H; auto with timestamp. lia.
-  Case "TSG0_gt".
+  (* Case "TSG0_gt". *)
   inv H0;  lia.
   constructor; lia.
 Qed.
@@ -220,8 +222,8 @@ Lemma time_stamp_lt_0_gt_0_lt: forall ts1 ts2,
   time_stamp_lt_0 ts1 -> time_stamp_gt_0 ts2 ->
   time_stamp_lt ts1 ts2.
 Proof.
-  intros * TSL; revert ts2; induction' TSL; intros ts2 TSG; inv TSG; auto with timestamp.
-  Case "TSL0_lt".
+  intros * TSL; revert ts2; induction TSL; intros ts2 TSG; inv TSG; auto with timestamp.
+  (* Case "TSL0_lt". *)
   constructor. lia.
 Qed.
 
@@ -229,10 +231,10 @@ Lemma time_stamp_all_0_lt_0_lt: forall st1 st2,
   time_stamp_all_0 st1 -> time_stamp_lt_0 st2 ->
   time_stamp_lt st2 st1.
 Proof.
-  intros * TSA0; revert st2; induction' TSA0; intros * TSL0.
-  Case "TSA0_nil".
+  intros * TSA0; revert st2; induction TSA0; intros * TSL0.
+  (* Case "TSA0_nil". *)
     auto with timestamp.
-  Case "TSA0_cons".
+  (* Case "TSA0_cons". *)
     inv TSL0; eauto with timestamp.
 Qed.
 
@@ -240,10 +242,10 @@ Lemma time_stamp_all_0_gt_0_lt: forall st1 st2,
   time_stamp_all_0 st1 -> time_stamp_gt_0 st2 ->
   time_stamp_lt st1 st2.
 Proof.
-  intros * TSA0; revert st2; induction' TSA0; intros * TSL0.
-  Case "TSA0_nil".
+  intros * TSA0; revert st2; induction TSA0; intros * TSL0.
+  (* Case "TSA0_nil". *)
     auto with timestamp.
-  Case "TSA0_cons".
+  (* Case "TSA0_cons". *)
     inv TSL0; eauto with timestamp.
 Qed.
 
@@ -266,12 +268,12 @@ Lemma time_stamp_all_0_lt_0: forall st1 st2,
   time_stamp_all_0 st1 ->
   time_stamp_lt_0 st2 .
 Proof.
-  intros * TSL; induction' TSL; intros TSA0; eauto with timestamp.
-  Case "TSLT_nil_l".
+  intros * TSL; induction TSL; intros TSA0; eauto with timestamp.
+  (* Case "TSLT_nil_l". *)
       exfalso. eapply not_all_0_gt; eauto.
-  Case "TSLT_lt".
+  (* Case "TSLT_lt". *)
     inv TSA0; eauto with timestamp.
-  Case "TSLT_eq".
+  (* Case "TSLT_eq". *)
     inv TSA0; eauto with timestamp.
 Qed.
 
@@ -279,12 +281,12 @@ Lemma time_stamp_all_0_gt_0: forall st1 st2,
   time_stamp_lt st1 st2 -> time_stamp_all_0 st1 ->
   time_stamp_gt_0 st2.
 Proof.
-  intros * TSL; induction' TSL; intros TSA0; eauto with timestamp.
-  Case "TSLT_nil_r".
+  intros * TSL; induction TSL; intros TSA0; eauto with timestamp.
+  (* Case "TSLT_nil_r". *)
       exfalso. eapply not_all_0_lt; eauto.
-  Case "TSLT_lt".
+  (* Case "TSLT_lt". *)
     inv TSA0; eauto with timestamp.
-  Case "TSLT_eq".
+  (* Case "TSLT_eq". *)
     inv TSA0; eauto with timestamp.
 Qed.
 
@@ -297,13 +299,13 @@ Instance time_stamp_lt_transitive: Transitive time_stamp_lt.
 Proof.
   unfold Transitive.
   intros * TSLTxy. revert z.
-  induction' TSLTxy; intros * TSLTls; eauto with timestamp.
-  Case "TSLT_lt".
+  induction TSLTxy; intros * TSLTls; eauto with timestamp.
+  (* Case "TSLT_lt". *)
     inv TSLTls; eauto with timestamp.
     inv H0; auto with timestamp.
     constructor. constructor. lia.
     constructor. lia.
-  Case "TSLT_eq".
+  (* Case "TSLT_eq". *)
     inv TSLTls; eauto with timestamp.
     inv H; eauto with timestamp.
 Qed.
@@ -330,7 +332,7 @@ Lemma time_stamp_lt_antisymmectric: forall ts1 ts2,
   time_stamp_lt ts1 ts2 -> time_stamp_lt ts2 ts1 -> False.
 Proof.
   intros * TS12.
-  induction' TS12; intros TS21; auto with timestamp; inv TS21; try omegaContradiction; eauto with timestamp; clean.
+  induction TS12; intros TS21; auto with timestamp; inv TS21; try omegaContradiction; eauto with timestamp; clean.
 Qed.
 
 Hint Resolve time_stamp_lt_antisymmectric: timestamp.
@@ -369,14 +371,14 @@ Add Parametric Morphism : time_stamp_lt with
   signature time_stamp_eq ==> time_stamp_eq ==> impl as TSE_TSL_impl.
 Proof.
   intros. unfold impl. intro TSL. revert dependent y. revert dependent y0.
-  induction' TSL; intros; subst_ts.
-  Case "TSLT_nil_l".
+  induction TSL; intros; subst_ts.
+  (* Case "TSLT_nil_l". *)
     inv H1; eauto with timestamp.
-  Case "TSLT_nil_r".
+  (* Case "TSLT_nil_r". *)
     inv H0; eauto with timestamp.
-  Case "TSLT_lt".
+  (* Case "TSLT_lt". *)
     inv H0; try inv H2; inv H1; try inv H0; eauto with timestamp. lia.
-  Case "TSLT_eq".
+  (* Case "TSLT_eq". *)
   inv H0; inv H; eauto with timestamp.
   inv H1; inv H0. eauto with timestamp.
   inv H1.  constructor. constructor. rewrite <- H4.

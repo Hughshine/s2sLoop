@@ -1,5 +1,7 @@
 Require List.
-
+Add LoadPath "~/formal/s2sLoop/from_compcert".
+Add LoadPath "~/formal/PilkiLib".
+Add LoadPath "~/formal/s2sLoop/src".
 Require Polyhedra.
 Require OCamlInterface.
 (* Standard lib *)

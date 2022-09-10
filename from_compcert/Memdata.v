@@ -15,7 +15,9 @@
 (* *********************************************************************)
 
 (** In-memory representation of values. *)
-
+Add LoadPath "~/formal/s2sLoop/from_compcert".
+Add LoadPath "~/formal/PilkiLib".
+Add LoadPath "~/formal/s2sLoop/src".
 Require Import Coqlib.
 Require Import AST.
 Require Import Integers.
@@ -1055,6 +1057,7 @@ Qed.
 Lemma memval_inject_id:
   forall mv, memval_inject inject_id mv mv.
 Proof.
-  destruct mv; econstructor. unfold inject_id; reflexivity. rewrite Int.add_zero; auto. 
+  destruct mv; econstructor. 
+  unfold inject_id; reflexivity. 
+  rewrite Int.add_zero; auto.
 Qed.
-

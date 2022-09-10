@@ -1,2 +1,4 @@
 *.ml
 *.mli
+*.aux
+*.vo

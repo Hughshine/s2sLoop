@@ -1,5 +1,7 @@
 (* The polyhedral language *)
-Add LoadPath "../from_compcert".
+Add LoadPath "~/formal/s2sLoop/from_compcert".
+Add LoadPath "~/formal/PilkiLib".
+Add LoadPath "~/formal/s2sLoop/src".
 Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Classes.RelationClasses.
 
@@ -225,8 +227,8 @@ Module PSemantics (Import M:BASEMEM(ZNum))
       mem2 = mem2'.
   Proof.
     intros * ILS.
-    induction' ILS; intros ILS'; inv ILS'; auto.
-    Case "ILS_cons".
+    induction ILS; intros ILS'; inv ILS'; auto.
+    (* Case "ILS_cons". *)
       replace' mem4 with mem2
         by (eapply instruction_point_semantics_deterministic; eauto).
       eauto.
@@ -241,19 +243,19 @@ Module PSemantics (Import M:BASEMEM(ZNum))
     l1 = l2.
   Proof.
     intros l1 SORTED1.
-    induction' SORTED1.
-    Case "SSorted_nil".
+    induction SORTED1.
+    (* Case "SSorted_nil". *)
       intros. symmetry. apply Permutation_nil; auto.
-    Case "SSorted_cons".
+    (* Case "SSorted_cons". *)
       intros * SORTED2 PERMUT.
       inv SORTED2.
-      SCase "SSorted_nil".
+      (* SCase "SSorted_nil". *)
         symmetry in PERMUT.
         apply Permutation_nil in PERMUT. inv PERMUT.
-      SCase "SSorted_cons".
+      (* SCase "SSorted_cons". *)
         rewrite Forall_forall in *.
         assert (a = a0).
-        SSCase "a = a0".
+        (* SSCase "a = a0". *)
           assert (In a (a0 :: l0)) by
             (eapply Permutation_in; eauto; simpl; eauto).
           simpl in H2.
@@ -269,7 +271,7 @@ Module PSemantics (Import M:BASEMEM(ZNum))
           unfold instruction_point_lt in *.
           eapply time_stamp_lt_antisymmectric; eauto.
 
-        SSCase "l = l0".
+        (* SSCase "l = l0". *)
           subst.
           f_equal.
           eapply IHSORTED1; eauto.

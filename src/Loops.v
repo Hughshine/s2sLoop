@@ -1,3 +1,6 @@
+Add LoadPath "~/formal/s2sLoop/from_compcert".
+Add LoadPath "~/formal/PilkiLib".
+Add LoadPath "~/formal/s2sLoop/src".
 Require Import AST.
 Require Import Memory.
 (*Require Import Values.*)
@@ -205,29 +208,29 @@ Module Semantics (N:NUMERICAL) (M:BASEMEM(N))
     mem1 = mem2).
   Proof.
     apply semantics_ind.
-    Case "1".
+    (* Case "1". *)
     intros. inv H. clean_somes.
     assert (wval = wval0). eapply I.semantics_deterministic; eauto.
     subst. congruence.
 
-    Case "2".
+    (* Case "2". *)
     intros. inv H0; clean_somes.
     eauto.
 
-    Case "3".
+    (* Case "3". *)
     intros.
     inv H; clean_somes. reflexivity. contradiction.
 
-    Case "4".
+    (* Case "4". *)
     intros.
     inv H1; clean_somes; try contradiction.
     assert (mem2 = mem5) by eauto. subst. eauto.
 
-    Case "5".
+    (* Case "5". *)
     intros.
     inv H; clean_somes. reflexivity.
 
-    Case "6".
+    (* Case "6". *)
     intros.
     inv H1; clean_somes.
     assert (mem2 = mem5) by eauto. subst. eauto.
