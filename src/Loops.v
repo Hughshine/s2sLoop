@@ -28,6 +28,7 @@ Module Semantics (N:NUMERICAL) (M:BASEMEM(N))
   Module T := Tools(N).
   Import T.
 
+  Print INSTRS.
   Existing Instance Numerical_Num.
   Open Scope numerical_scope.
 (*  Local Notation "'context_size'" := I.context_size.*)

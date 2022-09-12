@@ -1,4 +1,7 @@
 (* this is a simplified version of loops *)
+Add LoadPath "~/formal/s2sLoop/from_compcert".
+Add LoadPath "~/formal/PilkiLib".
+Add LoadPath "~/formal/s2sLoop/src".
 
 Require Import AST.
 Require Import Memory.
@@ -70,6 +73,8 @@ Module Type INSTRS(N:NUMERICAL).
 
      I1 will have a context_size of 2 (i and N) and I2 of 3 (j, i and
      N) (even if i does not appear in I2)
+
+     某指令的context：循环变量 + 全局变量
      *)
 
   Parameter context_size: Instruction -> nat.
@@ -83,14 +88,15 @@ Module Type INSTRS(N:NUMERICAL).
 
 
      The context is here augmented with 1, as usual, to allow affine
-     and not just linear transformations. All the location are read.
+     and not just linear transformations. All the location are read. (** 即多的一个维度是为常量偏移增加的维度 *)
 
-     The lenght of the inside list must correspond to the dimension of
+     The length of the inside list must correspond to the dimension of
      the array, but this is not enforced by the type.
 
+      记录了每个指令读到的内存地址；是关于context的仿射函数
      *)
-
-  Parameter read_locs: forall i: Instruction,
+    Print Num.
+     Parameter read_locs: forall i: Instruction,
     list (Array_Id * list (Vector Num ( S (context_size i)))).
 
 
@@ -123,7 +129,10 @@ Module Type INSTRS(N:NUMERICAL).
      agnostic in the semantics of the instructions. for example it
      cannot use the fact that addition is commutative), just by the
      preservation proof. It takes the context as an input to allow
-     instruction like T[i] = i; or T[i] = N*)
+     instruction like T[i] = i; or T[i] = N
+     
+     每一个指令，根据其context的确定性语义，从内存读到的值，和求值结果（求值结果指什么？写的值？），可以判断它是否正确执行。
+     *)
 
   Parameter semantics: forall i,
     Context (context_size i) -> (** the context *)
@@ -136,16 +145,20 @@ Module Type INSTRS(N:NUMERICAL).
      compare them there. Hence, it needs a complete equivalence
      between the loop form and the polyhedral form, which should need
      determinism of the semantics. I should check that this is true for
-     "pure" C instructions *)
+     "pure" C instructions 
+     
+     需要保证语义本身的确定性
 
-  Parameter semantics_deterministic:
+     *)
+
+     Parameter semantics_deterministic:
     forall i v lv val1 val2,
       semantics i v lv val1 -> semantics i v lv val2 -> val1 = val2.
 
 End INSTRS.
 
 (* as for memories, we need to be able to move from instruction in int
-   to instructions in Z *)
+   to instructions in Z （Why，都变成unsigned？ ）*)
 
 Module INSTRSI2Z (I:INSTRS(IntNum)) <: INSTRS(ZNum).
   Definition Instruction := I.Instruction.

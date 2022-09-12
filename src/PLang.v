@@ -66,7 +66,10 @@ Module PSemantics (Import M:BASEMEM(ZNum))
      dimensions, then by changing the adapter/schedule. I don't know
      yet how to do so for the code generation.
 
-     *)
+    这个版本的证明，不支持codegen. 
+    多面体模型的表示使用sigma-type，不好做证明。
+
+  *)
 
   Record Polyhedral_Instruction
     (nbr_global_parameters:nat):=
@@ -78,7 +81,7 @@ Module PSemantics (Import M:BASEMEM(ZNum))
       pi_poly: Boxed_Polyhedron nbr_global_parameters pi_depth;
       (** the schedule of the instruction *)
       pi_schedule:
-        list (ZVector (S (pi_depth + nbr_global_parameters)));
+        list (ZVector (S (pi_depth + nbr_global_parameters))); (** 注意，这里已经对schedule的维度做限制了。 *)
       (** transformation to move from elements of the polyhedron to the
          arguments of the instruction*)
       pi_transformation:

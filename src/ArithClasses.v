@@ -975,6 +975,8 @@ Next Obligation.
   dest_vects. simpl in *. clean.
 Qed.
 
+(* Check Vhd.
+Check !. *)
 Hint Unfold Vhd: vect.
 
 Program Definition Vtail {A:Type} {n} (v: Vector A (S n)): Vector A n :=
@@ -1723,6 +1725,7 @@ Qed.
      let v3 := Vdrop_p dim1 v13 in
        (v1 +++ v2) +++ v3.
 
+    Print V_insert_middle.
 
    Lemma V_insert_middle_ok_l `{Numerical A} (dim1 dim2 dim3: nat)
      (v1 v1': Vector A dim1)

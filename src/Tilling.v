@@ -340,15 +340,18 @@ Module Tilling (Import M:BASEMEM(ZNum))
         unfold Inhabited_Z; unfold Inhab_num in *; spec_lia.
   Qed.
 
+  Check Vhd.
+  Search ":::".
+
   Definition mk_tilled_poly_instr {nbr_global_parameters}
     (pi: Polyhedral_Instruction nbr_global_parameters)
     tc
       : Polyhedral_Instruction nbr_global_parameters :=
-      {| pi_instr := pi.(pi_instr);
-         pi_depth := pi.(pi_depth) + length tc;
-         pi_poly := mk_tilled_boxed_poly tc pi.(pi_poly);
+      {| pi_instr := pi.(pi_instr); (** 原指令本身不变 *)
+         pi_depth := pi.(pi_depth) + length tc; (** 维度增加tiling的维度 *)
+         pi_poly := mk_tilled_boxed_poly tc pi.(pi_poly); (** 多面体根据tiling info变换；但tc为什么不是跟schedule有关，而是只跟domain有关??*)
          pi_schedule :=
-           map (fun v =>
+           map (fun v => (** 对于schedule中间（中间指哪里，不清楚）插入一堆0，不知道有什么意义 *)
              Vhd v ::: (V_insert_middle0 (Vtail v))) pi.(pi_schedule);
          pi_transformation :=
            Vmap (fun v =>
@@ -383,6 +386,11 @@ Module Tilling (Import M:BASEMEM(ZNum))
   Qed.
 
 
+  (** 根据分块信息对某输入的多面体程序进行分块 
+    1. 全局信息不变
+    2. 根据分块信息，对美各指令进行分块
+      safe_map2 就是一个普通的map，对每个指令 mk_tilled_poly_instr instr tcs
+  *)
   Definition mk_tilled_poly_prog (prog: Poly_Program) tcs:
     option Poly_Program :=
     do instrs <- safe_map2 mk_tilled_poly_instr prog.(pp_poly_instrs) tcs;
@@ -390,6 +398,7 @@ Module Tilling (Import M:BASEMEM(ZNum))
       {| pp_nbr_global_parameters := prog.(pp_nbr_global_parameters);
          pp_poly_instrs := instrs|}.
 
+  (** 这个函数会判断 分块是否正确*)
   Theorem mk_tilled_poly_prog_ok prog1 prog2 tcs:
     mk_tilled_poly_prog prog1 tcs = Some prog2 ->
     forall params mem1 mem2,
@@ -400,11 +409,19 @@ Module Tilling (Import M:BASEMEM(ZNum))
   Proof.
     intros.
     unfold mk_tilled_poly_prog in H.
+    (** 
+    H: (do instrs <- safe_map2 mk_tilled_poly_instr (pp_poly_instrs prog1) tcs;
+     Some
+       {|
+       pp_nbr_global_parameters := pp_nbr_global_parameters prog1;
+       pp_poly_instrs := instrs |}) = Some prog2
+    *)
     prog_dos.
     assert
       (forall Vparams,
         flatten (map (expand_poly_instr Vparams) prog1.(pp_poly_instrs)) = 
         flatten (map (expand_poly_instr Vparams) instrs)) as FLATTEQ.
+    {
     (* Case "Assert: FLATTEQ". *)
       destruct prog1. simpl in *.
       revert tcs instrs Heq_do.
@@ -416,6 +433,7 @@ Module Tilling (Import M:BASEMEM(ZNum))
         simpl. f_equal.
         apply expand_tilled_poly_instr.
         eapply IHppinstrs; eauto.
+    }
     (* End_of_assert FLATTEQ. *)
     split; intro SEM;
     inv SEM; econstructor; eauto; simpl.
