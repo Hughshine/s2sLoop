@@ -44,6 +44,10 @@ Module Tilling (Import M:BASEMEM(ZNum))
      -a * x + i >=0 ->
      a*x - i + (a - 1) >= 0 ->
      x = i / a.
+    (** i+1 -a <= ax <= i 
+    => i/a + 1/a - 1 <= x <= i/a (a > 0)
+        (a是整数，1/a-1在[0, 1)之间)
+    *)
    Proof.
      intros.
      assert (a >= 1) by lia.
@@ -57,6 +61,14 @@ Module Tilling (Import M:BASEMEM(ZNum))
      -a * x  >=0 ->
      a*x  + (a - 1) >= 0 ->
      x = 0.
+    (** 
+      1-a <= ax <= 0
+    (a=0) => 无解
+    (a>0) => 1/a - 1 <= x <= 0
+             1/a - 1 在 (-1, 0]，所以x=0
+    (a<0) => 1-1/a >= x >= 0
+             1 - 1/a 在 [0, 1)，所以x=0
+    *)
    Proof.
      intros.
      assert (x = 0/a).
@@ -86,6 +98,7 @@ Module Tilling (Import M:BASEMEM(ZNum))
          mk_constraints_tile_dims (S num_tile) tc'
      end.
 
+  (** Inductive Z : Set :=  Z0 : Z | Zpos : positive -> Z | Zneg : positive -> Z *)
 
    Definition mk_tilled_poly 
      {depth nbr_global_parameters} (tc: list (positive * nat))
@@ -135,7 +148,7 @@ Module Tilling (Import M:BASEMEM(ZNum))
      {| bp_poly := mk_tilled_poly tc bpol.(bp_poly);
         bp_elts := (fun params =>
           map (fun v => v +++ (mk_tilled_vect tc v)) (bpol.(bp_elts) params))
-       |}.
+     |}.
    Next Obligation.
      pose proof (bp_elts_NoDup _ _ bpol params).
      remember_no_eq (bp_elts bpol params) as vs.

@@ -13,7 +13,7 @@ Require Import ArithClasses.
 (* we define the type of memories for Loops *)
 
 
-(* memory is splitted in arrays. Each array is recognised through it's
+(* memory is splitted in arrays. Each array is recognised through its
    ident.
 
    each cell of the array is then accessed through a list of indexes
@@ -156,15 +156,19 @@ Module Type BASEMEM(N:NUMERICAL).
      read_write mem1 ci v = Some mem2 ->
      read mem2 ci = Some v
 
-     This would not take into account the fact that writing at some
-     location can lead to lose information. Say you have a char[] and
+     This would not take into account because of the fact that writing at some
+     location can lead to information loss. Say you have a char[] and
      you write a large value in it. The compiler will automatically
      downgrade the large value to a char before writing it. So reading
      it will lead to a value in the range of char, not the initial one.
      
      For the correctness of the reordering of write, it is in fact
      useless to know exactly what would be read, but just that it is
-     the same, whatever the order of the writes are*)
+     the same, whatever the order of the writes are
+    
+     读一个刚刚写入的值时，读到的值不一定和写的值一致，因为可能会truncate;
+     这里只保证，每次写入相同位置相同的值，然后读，得到的值总是相同得（虽然不一定和写入的值一致）
+  *)
 
   Parameter rws: forall mem1 mem2 ci v,
     same_memory_layout mem1 mem2 ->
@@ -238,8 +242,10 @@ Module BMem(N:NUMERICAL) <: BASEMEM(N).
       | Some _ => true
     end.
 
+  (* Check valid_cell_of mem1 ≡ valid_cell_of mem2. *)
   Definition same_memory_layout mem1 mem2 := valid_cell_of mem1 ≡ valid_cell_of mem2.
 
+  (* Search "≡". *)
   Global Instance Equiv_smt: Equivalence same_memory_layout.
   Proof.
   constructor; unfold same_memory_layout.

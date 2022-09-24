@@ -837,7 +837,7 @@ Module Extract (Import M:BASEMEM(ZNum))
           OK (pil1' ++ pil2)
         }
     end.
-
+Print extract_statement_list.
   Lemma res_of_option_OK A (oa: option A) (a:A) err:
     res_of_option oa err = OK a -r> oa = Some a.
   Proof.

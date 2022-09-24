@@ -77,6 +77,7 @@ Proof.
   intros v constr. unfold*.
   apply satisfy_comparison_dec.
 Qed.
+(** decidable prop P :  {P} + {~ P} *)
 
 
 
@@ -84,6 +85,9 @@ Definition empty_constraint : Constraint :=
   {| constr_vect :=(V0 n);
      constr_comp := GE;
      constr_val := 1 |}.
+(** 为什么叫empty constraint? 这个constriant将所有点都排除在外*)
+     (* Print n. *)
+(* Compute (V0 n). *)
 
 Local Hint Unfold empty_constraint: autounfold.
 
@@ -510,13 +514,16 @@ Section INJECTIVITY.
 Definition M_Injective_on_Pol {n p} (m: ZMatrix n p) (pol: Polyhedron p) :=
   forall v1 v2, v1 ∈ pol -> v2 ∈ pol -> m × v1 = m × v2 -> v1 = v2.
 
-
+  (* Print "×".
+Check M_Injective_on_Pol. *)
 (* infix notation a la haskell. I don't think I can make a general
    notation for infix operators with `, but only specific ones*)
 
 Notation "m '`is_injective_on`' pol" := (M_Injective_on_Pol m pol) (at level 10).
 
 Definition Pol_intersection {n} (pol1 pol2: Polyhedron n) := pol1 ++ pol2.
+
+(* Print "++". append *)
 
 Notation "pol1 ∩ pol2" := (Pol_intersection pol1 pol2) (at level 65).
 
@@ -607,7 +614,7 @@ Proof.
   simpl_vect. f_equal. auto.
 Qed.
 
-
+(** 为constraint增加0维度，并不产生新的实例 *)
 Definition Constr_translate_l {n} p (c : Constraint n) : Constraint (n + p) :=
   {|constr_vect :=  c.(constr_vect) +++ V0 p;
     constr_comp := c.(constr_comp);
@@ -639,8 +646,11 @@ Qed.
 
 Hint Resolve Constr_translate_l_correct Constr_translate_r_correct: pol.
 
-
-Definition Pol_prod {n p} (p1: Polyhedron n) (p2:Polyhedron p) : Polyhedron (n + p) :=
+(** 两组约束交错 
+    [ p ] ( n )
+    ( n ) [ p ]
+*)
+Definition Pol_prod {n p} (p1: Polyhedron n) (p2: Polyhedron p) : Polyhedron (n + p) :=
   List.map (Constr_translate_l p) p1
    ∩
    List.map (Constr_translate_r n) p2.
@@ -648,7 +658,7 @@ Definition Pol_prod {n p} (p1: Polyhedron n) (p2:Polyhedron p) : Polyhedron (n +
 Notation "p1 ⊗ p2" := (Pol_prod p1 p2) (at level 65). (* \otimes *) (* utf8 : 228D *)
 
 
-
+Print "+++".
 
 Lemma Pol_In_prod_In_l n p (p1: Polyhedron n) (p2:Polyhedron p) v1 v2 :
   v1 +++ v2 ∈ p1 ⊗ p2 -> v1 ∈ p1.
@@ -693,6 +703,7 @@ Proof.
 Qed.
 Hint Resolve Pol_In_In_prod Pol_In_prod_In_r Pol_In_prod_In_l: pol.
 
+Print "--".
 
 (* define the polyhedron of dimension 2p such that v1 +++ v2 ∈ pol iff
    m × v1 = m × v2 *)
@@ -972,9 +983,11 @@ Next Obligation.
 Qed.
 End INJECTIVITY.
 
+Print Pol_prod.
+
 Notation "p1 ⊗ p2" := (Pol_prod p1 p2) (at level 65). (* \otimes *) (* utf8 : 228D *)
 
-
+(** 增加对应的常数行/列，多一个约束（1 * c = 1），其他的约束多一个0列 *)
 Definition extend_polyhedron {n} (p:Polyhedron n) : Polyhedron (S n) :=
   {| constr_vect := 1 ::: V0 n;
      constr_comp := EQ;
@@ -1052,7 +1065,7 @@ Record Pseudo_Constraint := mkPseudoConstraint
     pconstr_val: Z}.
 
 Definition Pseudo_Polyhedron := list Pseudo_Constraint.
-
+(** 这部分定义 感觉是没什么用的 *)
 (*Fixpoint is_of_length (n: nat) (pv: Pseudo_ZVector) :=
   match n, pv with
     | O, nil => true
@@ -1075,7 +1088,6 @@ Qed.*)
 Definition make_constraint n (pc: Pseudo_Constraint) : option (Constraint n):=
   do v <- make_vector n pc.(pconstr_vect);
   point (mkConstraint v pc.(pconstr_comp) pc.(pconstr_val)).
-
 
 
 Definition make_polyhedron n (ph : Pseudo_Polyhedron) : option (Polyhedron n):=

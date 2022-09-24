@@ -25,9 +25,10 @@ Tactic Notation "rewrite_Heq_do" :=
     end; simpl_do.
 
 
-
 Module ExtraLemma(CM:MEM).
-  Lemma load_store: forall (m1 m2 m1' m2': CM.mem) mc b i v,
+(** CompCert中的MEM定义 *)
+  
+Lemma load_store: forall (m1 m2 m1' m2': CM.mem) mc b i v,
     CM.store mc m1 b i v = Some m1' ->
     CM.store mc m2 b i v = Some m2' ->
     CM.load mc m1' b i = CM.load mc m2' b i.
@@ -56,7 +57,7 @@ Module FromCminorEnv(N:NUMERICAL)(CM:MEM)<:(BASEMEM(N)).
 
 
   (* we define a way to inject the memory model of Cminor inside the
-     one of Loops, modulo a reasonable expression of the result of an
+     one of Loops, modulo（？什么意思） a reasonable expression of the result of an
      alias analysis *)
 
   Module EL := ExtraLemma(CM).
@@ -101,12 +102,14 @@ Module FromCminorEnv(N:NUMERICAL)(CM:MEM)<:(BASEMEM(N)).
 
   (* two location are "non interfering" (result of alias analysis)
      when accessed according to the memory chunks *)
-
+  (* Print memory_chunk. *)
   Inductive non_interfering:
     location -> memory_chunk -> location -> memory_chunk -> Prop :=
 
   (** a pointer (in the memory) and an ident (in the local store) are
-     non interfering*)
+     non interfering
+     这个定义真的OK吗？？？ 
+  **)
   | NI_pv: forall p mc1 i mc2,
     non_interfering p mc1 i mc2
   | NI_vp: forall i mc1 p mc2,
