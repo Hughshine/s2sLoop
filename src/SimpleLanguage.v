@@ -1,4 +1,6 @@
-Add LoadPath "../from_compcert".
+Add LoadPath "~/formal/s2sLoop/from_compcert".
+Add LoadPath "~/formal/PilkiLib".
+Add LoadPath "~/formal/s2sLoop/src".
 Require Import Libs.
 (*Require Import Floats.*)
 Require Import AST.
@@ -25,12 +27,15 @@ Module Instructions <:INSTRS(ZNum) with Definition Value := BM.Value.
   (* The values of the language *)
   Definition Value := BM.Value.
 
+  (** 加减乘除 *)
+
   Inductive Binary_opp:=
   | BO_add
   | BO_mul
   | BO_sub
   | BO_div.
 
+  (** 表达式：常量（写成一个关于context的仿射表达式，如果对context变换，这个表达式的形式其实也会变换），对数组的访问，一元/二元表达式（递归的） *)
   Inductive Expression (n:nat) : Type :=
   | Exp_const: ZVector (S n) -> Expression n
   | Exp_loc: Array_Id * list (ZVector (S n)) -> Expression n
@@ -38,8 +43,8 @@ Module Instructions <:INSTRS(ZNum) with Definition Value := BM.Value.
   | Exp_opp: Expression n -> Expression n.
 
 
-
-
+  (** （某个context下）的写指令：对某个内存地址写；*)
+  (** 这里似乎假设每个指令都是 经过一些计算（read）然后写向某个内存地址 *)
   Record Instruction': Type :=
     { context_size: nat;
       write_loc: Array_Id * list (ZVector (S context_size));
@@ -59,10 +64,10 @@ Module Instructions <:INSTRS(ZNum) with Definition Value := BM.Value.
       | Exp_opp e => exp_read_locs e
     end.
 
-
   Definition read_locs instr:=
     exp_read_locs (body instr).
 
+  (** evaluation 可能无法求解出值 *)
   Definition eval_bin_opp opp arg1 arg2 :=
     match opp with
     | BO_add => Some (arg1 + arg2)
@@ -70,6 +75,8 @@ Module Instructions <:INSTRS(ZNum) with Definition Value := BM.Value.
     | BO_sub => Some (arg1 - arg2)
     | BO_div => if arg2 == 0 then None else Some (arg1 / arg2)
   end.
+
+  (** rvals：读内存部分语义拿到了这个函数外，作为eval_exp的输入，从左至右 *)
 
   Fixpoint eval_exp {n}  ectxt (exp: Expression n) rvals :
     option (Value * list Value):=
@@ -94,6 +101,9 @@ Module Instructions <:INSTRS(ZNum) with Definition Value := BM.Value.
     end.
 
 
+  (** ctxt的这个1是什么？ 应该要对应常数。
+    要求在一个context/准确的内存序列下，计算出对应的值
+  *)
   Definition semantics (instr:Instruction) ctxt rvals res : Prop :=
     eval_exp (1:::ctxt) instr.(body) rvals = Some(res, []).
 

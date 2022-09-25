@@ -7,6 +7,7 @@ Require Import Zhints.
 Hint Resolve Zgt_pos_0.
 Hint Resolve Zle_0_pos.
 
+(** Ceil devision / Floor Devision *)
 Definition ceild (n:Z) (d:positive) : Z :=
   let d' := Zpos d in
   if zlt n 0 then

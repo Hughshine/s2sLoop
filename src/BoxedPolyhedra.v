@@ -9,6 +9,7 @@ Require Import Loops.
 Require Import Memory.
 Require Import ArithClasses.
 Require Import Permutation.
+(* Print Permutation. *)
 Require Import Sorted.
 Open Scope string_scope.
 (*Set Implicit Arguments.*)

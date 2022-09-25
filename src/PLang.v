@@ -75,13 +75,13 @@ Module PSemantics (Import M:BASEMEM(ZNum))
     (nbr_global_parameters:nat):=
     { (** the instruction *)
       pi_instr: I.Instruction;
-      (** the depth of the instruction in the program *)
+      (** the depth of the instruction in the program，应该和context有关 *)
       pi_depth: nat;
       (** the Polyhedron *)
       pi_poly: Boxed_Polyhedron nbr_global_parameters pi_depth;
       (** the schedule of the instruction *)
       pi_schedule:
-        list (ZVector (S (pi_depth + nbr_global_parameters))); (** 注意，这里已经对schedule的维度做限制了。 *)
+        list (ZVector (S (pi_depth + nbr_global_parameters))); (** 注意，这里已经对schedule的维度做限制了。 list of vector, 其实就是矩阵... 只不过少了一层sigma type对行数的约束 *)
       (** transformation to move from elements of the polyhedron to the
          arguments of the instruction*)
       pi_transformation:
@@ -105,7 +105,7 @@ Module PSemantics (Import M:BASEMEM(ZNum))
   (* definition of the semantics *)
 
   (* one instance of an instruction, in one point of the Polyhedron *)
-
+(* Print Arguments. *)
   Record Instruction_Point := {
     ip_instruction : I.Instruction;
     ip_arguments: Arguments (I.context_size ip_instruction);
@@ -183,6 +183,12 @@ Module PSemantics (Import M:BASEMEM(ZNum))
          ip_time_stamp := apply_schedule pi.(pi_schedule) ectxt|})
       ectxts.
 
+    (* Print Sorted.
+    Print HdRel. *)
+
+
+
+  (** Sorted: elem1 比后续的list中的更大，对于每一个都是 *)
   Inductive poly_program_semantics_param
     (ip_order: Instruction_Point ->Instruction_Point -> Prop)
     (prog: Poly_Program)
@@ -191,7 +197,11 @@ Module PSemantics (Import M:BASEMEM(ZNum))
     (Vparams: ZVector prog.(pp_nbr_global_parameters)),
     make_vector _ params = Some Vparams ->
     (** sorted_instruction_points is the set of instruction points, 
-       flattened and sorted*)
+       flattened and sorted
+        前者限定字典序，后者限定一一对应。
+        所以：只要按序排布即可。
+    *)
+      
     Sorted ip_order sorted_instruction_points ->
     Permutation (flatten (map (expand_poly_instr Vparams) prog.(pp_poly_instrs)))
       sorted_instruction_points ->
@@ -203,7 +213,9 @@ Module PSemantics (Import M:BASEMEM(ZNum))
     poly_program_semantics_param instruction_point_le.
     
 
-
+  (** 这个多面体语义也是比较简单的。
+    就是所有指令的每个instance按字典序随意排布，都是它的可行语义。
+  *)
   (* LIB *)
   Tactic Notation "replace'" hyp(H) "with" constr(H') "by" tactic(t) :=
     replace H with H' in * by t; clear H.

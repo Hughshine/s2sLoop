@@ -510,7 +510,9 @@ Notation "p1 ⊂ p2" := (Pol_Included p1 p2) (at level 70).
 
 Section INJECTIVITY.
 (* we now move to injectivity of a matrix on a polyhedra *)
-
+(** 矩阵和多面体的单射关系： 
+  对于任意两个多面体中的点，如果它们左乘矩阵的结果相同，那么两个点相同
+*)
 Definition M_Injective_on_Pol {n p} (m: ZMatrix n p) (pol: Polyhedron p) :=
   forall v1 v2, v1 ∈ pol -> v2 ∈ pol -> m × v1 = m × v2 -> v1 = v2.
 
