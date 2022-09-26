@@ -34,6 +34,7 @@ Module Permut (Import M:BASEMEM(ZNum))
   Import P. Import T. Import L.
   Import Mem.
 
+  (** 和 Instruction Point 的区别是多了个time stamp *)
   Record Instruction_Point_DTS := {
     ip2_instruction : I.Instruction;
     ip2_arguments: Arguments (I.context_size ip2_instruction);
@@ -62,6 +63,7 @@ Module Permut (Import M:BASEMEM(ZNum))
        ip_time_stamp := ip2ts.(ip2_time_stamp2)
     |}.
 
+  (** ip2 semantics: 只关心第一个timestamp *)
   Definition ip2ts_semantics ip2ts mem1 mem2 :=
     instruction_point_semantics (ip_of_ip2ts_1 ip2ts) mem1 mem2.
 
@@ -531,7 +533,7 @@ Module Permut (Import M:BASEMEM(ZNum))
           end.
   Qed.
 
-
+  (** 看起来是把中间的计算信息也放进来了 *)
   Record Polyhedral_Instruction_DTS
     (nbr_global_parameters:nat):=
     { (** the instruction *)
@@ -1534,7 +1536,9 @@ Opaque validate_one_loc.
           apply IHrlocs. assumption.
   Qed.
 
-  Fixpoint validate_lst_instrs {nbr_global_parameters}
+  (* Print tt. *)
+
+  Fixpoint validate_lst_instrs {nbr_global_parameters}  (** 看起来是任意两个指令，两两间validate一下 *)
     (lpi: list (Polyhedral_Instruction_DTS nbr_global_parameters)):
     res unit:=
     match lpi with
@@ -1584,6 +1588,11 @@ Opaque validate_one_loc.
     end
     end.
 
+  (** change schedule 完全针对新的domain 做优化 
+     需要看：
+     1. 优化本身，change_schedule_aux
+     2. validator  
+  *)
 
   Definition change_schedule
     (prog : Poly_Program)
@@ -1810,7 +1819,7 @@ Opaque validate_one_loc.
     change_schedule prog lsched = OK tprog ->
     forall params,
     forall mem1 mem2,
-      poly_program_semantics_param instruction_point_lt prog params mem1 mem2 ->
+    poly_program_semantics prog params mem1 mem2 ->
       (exists mem2', poly_program_semantics tprog params mem1 mem2') /\
       (forall mem2', poly_program_semantics tprog params mem1 mem2' -> mem2 ≡ mem2').
   Proof.

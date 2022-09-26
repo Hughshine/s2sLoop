@@ -28,6 +28,7 @@ Parts of the code of my PhD
    2. CeildFloord ?
    3. Bounds?
       1. 定义每一重循环的上下界，辅助用
+      2. 定义了一些工具类
    4. Timestamp（？看起来很重要，做什么的？）
       1. 看起来是和schedule有关，具体是什么关系？
       2. 是给“Instruction_Point”用的，也就是每个instance. schedule 为domain中的每个点赋予了一个 timestamp. Poly的语义，建立在instruction point的语义之上，额外多个排序.

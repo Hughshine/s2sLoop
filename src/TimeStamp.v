@@ -25,6 +25,8 @@ Open Scope Z_scope.
 
 Hint Resolve Zgt_lt.
 (* a time stamp is a multi dimentionnal date *)
+(** 这个文件就是一些对时间戳的推理，主要是一些关于字典序的推理 *)
+
 Definition Time_Stamp := list Z.
 
 Inductive time_stamp_all_0: Time_Stamp -> Prop :=

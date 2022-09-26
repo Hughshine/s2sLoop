@@ -159,7 +159,12 @@ Proof.
     apply IHn. omega.
 Qed.
 
-(* all numbers strictly smaller than len *)
+(** 这前面的几个定义，在说 描述了单独某变量的 constraint 的一些性质
+*)
+
+(* all numbers strictly smaller than len 
+  [len-1, ..., 0]
+*)
 Fixpoint sequence_lesser len : list nat :=
   match len with
     | O => []
@@ -168,7 +173,9 @@ Fixpoint sequence_lesser len : list nat :=
 
 
 (*Notation "pol1 ∩ pol2" := (inter_poly pol1 pol2) (at level 65).*)
-
+(** 
+    constraint_nth_param 是一个只限制第n个参数的值为 param 的函数
+*)
 Definition poly_containing_params_aux {nbr_global_parameters: nat} depth
   (params: ZVector nbr_global_parameters)
    : nat -> Constraint (depth + nbr_global_parameters) :=
@@ -177,7 +184,9 @@ Definition poly_containing_params_aux {nbr_global_parameters: nat} depth
     (Vnth params p).
 
 (* the polyhedron containing all vectors v of size depth + nbr_global_parameters
-   such that drop_v depth v = params *)
+   such that drop_v depth v = params 
+  这个函数给出根据参数列表对全局变量做限制的多面体   
+*)
 
 Definition poly_containing_params {nbr_global_parameters depth: nat}
   (params: ZVector nbr_global_parameters):
@@ -198,7 +207,7 @@ Proof.
   intros *.
   induction n as [|n]; intros.
   (* Case "O". *)
-    omegaContradiction.
+  omegaContradiction.
 
   (* Case "S n". *)
   simpl in *. inv H.
@@ -246,6 +255,7 @@ Qed.
 
 
 (* correctness of poly_containing_params *)
+(** 在某一个具体的执行中，全局变量是确定的；前面创造的只包含全局变量的多面体 中的点 关于全局变量的维度，全都和全局变量一致 *)
 Lemma poly_containing_params_drop_1 {nbr_global_parameters depth: nat}
   (params: ZVector nbr_global_parameters) (v: ZVector (depth + nbr_global_parameters)):
   v ∈ poly_containing_params params -> Vdrop_p depth v = params.
@@ -329,13 +339,12 @@ Proof.
 Qed.
 
 
-
 (* a boxed Polyhedron is a Polyhedron such that when the params are
    fixed, it contains a finite number of elements. Those elements are
    available through the bp_elts function. (in fact, only the prefix
    of length depth is returned, the "real" elements can be obtained by
    concatenation with the params) *)
-
+(** 这里其实没有给出box poly的具体定义。其实就是在尝试把全局变量和循环变量 在多面体中 区分开了，在具体的推理过程，于是可以只考虑循环遍历；全局变量的推理是简单的，可以分离开推理。*)
 Record Boxed_Polyhedron nbr_global_parameters depth := mk_Boxed_Polyhedron
   { bp_poly: Polyhedron (depth + nbr_global_parameters);
     bp_elts: forall params: ZVector nbr_global_parameters, list (ZVector depth);

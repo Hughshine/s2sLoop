@@ -24,11 +24,14 @@ Set Implicit Arguments.
 Module Semantics (N:NUMERICAL) (M:BASEMEM(N))
   (Import I:INSTRS(N) with Definition Value := M.Value).
 
-  Import N. Import M.
+  Import N. (** nat? *)
+  (* Print N. *)
+  Import M.
+  Print M. (** BASEMEM *)
   Module T := Tools(N).
   Import T.
 
-  Print INSTRS.
+  (* Print INSTRS. *)
   Existing Instance Numerical_Num.
   Open Scope numerical_scope.
 (*  Local Notation "'context_size'" := I.context_size.*)

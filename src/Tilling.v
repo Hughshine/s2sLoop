@@ -12,7 +12,7 @@ Require Import Sorted.
 Require Import Instructions.
 Require Import Bounds.
 Require Import BoxedPolyhedra.
-Require Import Psatz.
+Require Import Psatz. (** 提供一些tactics *)
 Require Import PolyBase.
 Require Import PLang.
 Require Import TimeStamp.
@@ -77,29 +77,35 @@ Module Tilling (Import M:BASEMEM(ZNum))
      assumption.
    Qed.
 
-
-   Fixpoint mk_constraints_tile_dims
-     {depth nbr_global_parameters nbr_tiles: nat}
-     (num_tile : nat)
-     (tc: list (positive * nat))
-       : Polyhedron ((depth + nbr_tiles) + nbr_global_parameters):=
-     match tc with
-     | [] => []
-     | (a', n) :: tc' =>
-       let a := Zpos a' in
-         mkConstraint 
-           (((Vnth_at_val depth n 1) +++ (Vnth_at_val nbr_tiles num_tile (-a)))
-             +++ (V0 nbr_global_parameters))
-           GE 0 ::
-         mkConstraint
-           (((Vnth_at_val depth n (- 1)) +++ (Vnth_at_val nbr_tiles num_tile (a)))
-             +++ (V0 nbr_global_parameters))
-           GE (1 - a) ::
-         mk_constraints_tile_dims (S num_tile) tc'
-     end.
+  (** 生成关于分块维度的约束（根据一个列表的分块信息，pos是这一层的tile size，nat是对应的层数（即某个旧维度））
+      这一步会建立分块维度（IT）和旧维度（I）的关系（相关约束）：
+       a * IT <= I < a * IT + a 
+                   (<= a * IT + a - 1)
+      【无关维度都是0】
+      注意，这里是domain，维度和循环的层数无关
+  *)
+  Fixpoint mk_constraints_tile_dims
+    {depth nbr_global_parameters nbr_tiles: nat}
+    (num_tile : nat)
+    (tc: list (positive * nat))
+      : Polyhedron ((depth + nbr_tiles) + nbr_global_parameters):=
+    match tc with
+    | [] => []
+    | (a', n) :: tc' =>
+      let a := Zpos a' in
+        mkConstraint 
+          (((Vnth_at_val depth n 1) +++ (Vnth_at_val nbr_tiles num_tile (-a)))
+            +++ (V0 nbr_global_parameters))
+          GE 0 ::
+        mkConstraint
+          (((Vnth_at_val depth n (- 1)) +++ (Vnth_at_val nbr_tiles num_tile (a)))
+            +++ (V0 nbr_global_parameters))
+          GE (1 - a) ::
+        mk_constraints_tile_dims (S num_tile) tc'
+    end.
 
   (** Inductive Z : Set :=  Z0 : Z | Zpos : positive -> Z | Zneg : positive -> Z *)
-
+  (** 分块，就是对旧的约束的维度做扩增（但是仍为0），然后加入新的对分块维度的约束*)
    Definition mk_tilled_poly 
      {depth nbr_global_parameters} (tc: list (positive * nat))
      (pol: Polyhedron (depth + nbr_global_parameters)):
@@ -364,7 +370,7 @@ Module Tilling (Import M:BASEMEM(ZNum))
          pi_depth := pi.(pi_depth) + length tc; (** 维度增加tiling的维度 *)
          pi_poly := mk_tilled_boxed_poly tc pi.(pi_poly); (** 多面体根据tiling info变换；但tc为什么不是跟schedule有关，而是只跟domain有关??*)
          pi_schedule :=
-           map (fun v => (** 对于schedule中间（中间指哪里，不清楚）插入一堆0，不知道有什么意义 *)
+           map (fun v => (** 对于schedule中间（中间指哪里，不清楚）插入一堆0，不知道有什么意义 —— 啊，tiling这些维度，不贡献序，排序不需要它们，所以schedule它们对应0即可*)
              Vhd v ::: (V_insert_middle0 (Vtail v))) pi.(pi_schedule);
          pi_transformation :=
            Vmap (fun v =>
@@ -403,7 +409,11 @@ Module Tilling (Import M:BASEMEM(ZNum))
     1. 全局信息不变
     2. 根据分块信息，对美各指令进行分块
       safe_map2 就是一个普通的map，对每个指令 mk_tilled_poly_instr instr tcs
+      虽然返回值是option，但这个option很朴素. 这个文件的分块，是一定正确的【除非传入的tcs的长度都无法匹配】，它只改变了domain. 
+      对不同的指令，可以做不同的分块。不太instr的depth是可以不同的。
+      嗯... 这里就是没有考虑依赖。
   *)
+  Print safe_map2.
   Definition mk_tilled_poly_prog (prog: Poly_Program) tcs:
     option Poly_Program :=
     do instrs <- safe_map2 mk_tilled_poly_instr prog.(pp_poly_instrs) tcs;
@@ -455,3 +465,7 @@ Module Tilling (Import M:BASEMEM(ZNum))
   Qed.
     
 End Tilling.
+
+(** 这个Tiling看起来相当于是，只在domain进行了分块，没有动schedule，也没有分析被分块维度是不是可交换的，等等 
+—— 这个分块真的有意义吗？在代码生成的时候，会对这种映射到0的维度，如何处理？
+*)

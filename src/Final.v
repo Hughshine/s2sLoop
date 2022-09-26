@@ -34,11 +34,13 @@ Module Validator (Import M:BASEMEM(ZNum))
   Import Mem.
 
   Module Per := Permut(M)(I).
-  Import Per.
-  Import Til.
-  Import EP.
-  Import P. Import T. Import L.
-
+  Import Per. 
+  Import Til. (** Tiling *)
+  Import EP. (** Extract *)
+  Import P. (** Poly *) 
+  Import T. (** Tools *)
+  Import L. (** Loops Lang *)
+  
   Definition optimize
     (blackbox: Poly_Program -> 
       res ((list (list (positive * nat))) * list (list (list Z))))
