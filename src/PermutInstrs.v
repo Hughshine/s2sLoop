@@ -740,14 +740,14 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
       | v1 :: sched1' =>
         let v := (-- v1) +++ v2 in
         ((mkConstraint v GE 1) :: pol) ::
-        (make_poly_lt0_l sched1' v2 ((mkConstraint v EQ 0) :: pol))
+        (make_poly_lt0_l sched1' v2 ((mkConstraint v EQ 0) :: pol)) (** *)
     end.
 
 
   Lemma make_poly_lt0_l_correct (dim1 dim2: nat)
     (sched1: list (ZVector dim1))
     (pol: Polyhedron (dim1 + dim2)):
-    forall v1 v2,
+    forall v1 v2, (** 如果多面体中的一个点，只关注sched1那些维度，时间戳<0 <=> 那么对该多面体进行改造（保留“时间戳<0的那些点”），这个点仍然在其中*)
       ((v1 +++ v2) ∈ pol /\ time_stamp_lt_0 (map (fun vs1 => 〈vs1, v1〉) sched1)) <->
       Exists (fun p => (v1 +++ v2) ∈ p) (make_poly_lt0_l sched1 (V0 dim2) pol).
   Proof.
@@ -758,7 +758,7 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
     constructor. lia.
   Qed.
 
-  Fixpoint make_poly_lt0_r {dim1 dim2: nat}
+  Fixpoint make_poly_lt0_r {dim1 dim2: nat} 
      (v1: ZVector dim1) (sched2: list (ZVector dim2))
     (pol: Polyhedron (dim1 + dim2)) :=
     match sched2 with
@@ -834,23 +834,25 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
     constructor. lia.
   Qed.
 
-
+  (** *)
   Fixpoint make_poly_lt {dim1 dim2: nat}
     (sched1: list (ZVector dim1)) (sched2: list (ZVector dim2))
     (pol: Polyhedron (dim1 + dim2))
     : list (Polyhedron (dim1 + dim2)):=
+    (** 可以类比于 dependency polyhedron；输入一个ploy1的iv1和poly2的iv2，如果 iv1++iv2 in poly,那么意味着iv1.ts < iv2.ts；不过实际是一个list的poly，其中的每一个对应从前向后的字典序的一层 *)
     match sched1, sched2 with
       | [], [] => []
       | v1 :: sched1', v2 :: sched2' =>
         let v := (-- v1) +++ v2 in
-        ((mkConstraint v GE 1) :: pol) ::
-        (make_poly_lt sched1' sched2' ((mkConstraint v EQ 0) :: pol))
+        ((mkConstraint v GE 1) :: pol) :: (** v1 <= v2; ts1 <= ts2*)
+        (make_poly_lt sched1' sched2' ((mkConstraint v EQ 0) :: pol))  (** ts1 = ts2; 感觉是字典序 *)
       | v1 :: sched1', nil =>
         make_poly_lt0_l sched1 (V0 dim2) pol 
       | [], v2 :: sched2' =>
         make_poly_gt0_r (V0 dim1) sched2 pol
     end.
   
+  Search "::".
   Lemma make_poly_lt_correct (dim1 dim2: nat)
     (sched1: list (ZVector dim1)) (sched2: list (ZVector dim2))
     (pol: Polyhedron (dim1 + dim2)):
@@ -1187,8 +1189,13 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
       rewrite <- make_poly_gt_correct in H1. destruct H1.
       split; auto.
   Qed.
-    
 
+  (* Check safe_map2. *)
+  (* Check (safe_map2 (fun v1 v2 => mkConstraint ((-- v1) +++ v2) EQ 0) loc1 loc2). *)
+
+  Check list_forall_semi_dec.
+  Print list_forall_semi_dec.
+    
   Definition validate_one_loc {dim1 dim2}
     (pol: Polyhedron (dim1 + dim2))
     (loc1: Array_Id * list (ZVector dim1))
@@ -1197,8 +1204,9 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
     (pols_ge: list (Polyhedron (dim1 + dim2))) : res unit :=
     let (id1, loc1) := loc1 in
     let (id2, loc2) := loc2 in
-    if id1 == id2 then
+    if id1 == id2 then 
       match safe_map2 (fun v1 v2 => mkConstraint ((-- v1) +++ v2) EQ 0) loc1 loc2 with
+      (** 一个约束，要求每一个维度的数组访问都相同，也就是sameloc约束 *)
       | None => Err "Access to the same array with different dimensions"
       | Some sameloc =>
       let sameloc_pol := sameloc ∩ pol in
@@ -1206,7 +1214,7 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
       (list_forall_semi_dec
         (fun pol_lt =>
           list_forall (fun pol_ge : Polyhedron (dim1 + dim2) =>
-              pol_ge ∩ (pol_lt ∩ (sameloc ∩ pol))  ≈∅)
+              pol_ge ∩ (pol_lt ∩ (sameloc ∩ pol))  ≈∅) (** iv 怎么和 sched 乘起来的？... *)
             pols_ge)
         (fun _ => True)
         (fun pol_lt => let pol_lt_sameloc := pol_lt ∩ sameloc_pol in
@@ -1215,7 +1223,7 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
       then OK tt else
       Err "Could not validate the emptyness of all polyhedra"
       end
-    else
+    else (** 如果不是一个数组，直接认为OK *)
       OK tt.
 
   Definition translate_locs' {dim} (ectxt: ZVector dim)
@@ -1349,8 +1357,11 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
       res unit:=
     let pols_lt := make_poly_lt pi1.(pi2_schedule1) pi2.(pi2_schedule1) [] in
     let pols_ge := make_poly_ge pi1.(pi2_schedule2) pi2.(pi2_schedule2) [] in
+
     let pol := params_eq nbr_global_parameters _ _ ∩
-      (pi1.(pi2_poly_ext) ⊗ pi2.(pi2_poly_ext) )in
+      (pi1.(pi2_poly_ext) ⊗ pi2.(pi2_poly_ext) )  
+      (** 两个poly并列放在一个空间，并增加全局参数的约束 *)
+    in
     (* check the two write locations *)
     do _ <- validate_one_loc pol pi1.(pi2_wloc) pi2.(pi2_wloc) pols_lt pols_ge;
     do _ <-
@@ -1457,7 +1468,7 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
 
 Opaque validate_one_loc.
 
-
+  (** 验证了的两个指令，它们的指令点，ip1.sched1 < ip2.sched1 & ip1.sched2 >= ip2.sched2 那么这两个指令点是可交换的 *)
   Lemma validate_two_instrs_ok nbr_global_parameters
     (pi1 pi2: Polyhedral_Instruction_DTS nbr_global_parameters):
     validate_two_instrs pi1 pi2 = OK tt ->
@@ -1538,7 +1549,7 @@ Opaque validate_one_loc.
 
   (* Print tt. *)
 
-  Fixpoint validate_lst_instrs {nbr_global_parameters}  (** 看起来是任意两个指令，两两间validate一下 *)
+  Fixpoint validate_lst_instrs {nbr_global_parameters}  (** 看起来是任意两个指令，两两间validate一下，而且两个方向都验证了一下；自己和自己也验证了一下 *)
     (lpi: list (Polyhedral_Instruction_DTS nbr_global_parameters)):
     res unit:=
     match lpi with
@@ -1551,20 +1562,26 @@ Opaque validate_one_loc.
       validate_lst_instrs lip'
     end.
 
+    Print make_vector.
+
   Fixpoint change_schedule_aux {nbr_global_parameters}
     (lpi: list (Polyhedral_Instruction nbr_global_parameters))
-    (lsched: list (list (list Z))):
+    (lsched: list (list (list Z))): 
     res (list (Polyhedral_Instruction_DTS nbr_global_parameters)):=
     match lpi, lsched with
     | [], [] => OK []
     | _ :: _ , [] => Err "Not enough new schedules"
     | [], _ :: _ => Err "To many new schedules"
     | pi :: lpi', psched :: lsched' =>
-    match mmap (make_vector (S (pi.(pi_depth) + nbr_global_parameters))) psched with
+    match mmap (make_vector (S (pi.(pi_depth) + nbr_global_parameters))) psched with (** 把一个普通的vector，变成相应sigma type的vector，相当于在做维度检查*)
     | None => Err "A schedule does not have the right dimension"
-    | Some sched =>
-    do  l <- change_schedule_aux lpi' lsched';
-    OK(
+    | Some sched => (** 用Vector类型表示的sched，维度数正确地编码在类型中 *)
+    do  l <- change_schedule_aux lpi' lsched'; (** 剩余维度正常change schedule *)
+    (** 每一个维度如何change schedule：
+        看起来，真正有用的，就是把schedule覆盖了... 
+        不过为了validation方便，把痕迹都保留着。
+    *)
+    OK( 
       let ext_transf := (extend_matrix pi.(pi_transformation)) in
       {| pi2_instr := pi.(pi_instr);
          pi2_depth := pi.(pi_depth);
@@ -1612,7 +1629,8 @@ Opaque validate_one_loc.
                   pi_transformation := pi2.(pi2_transformation)|})
              pi2l|}.
 
-
+  (* Definition ip2ts_list_semantics lip2 :=
+  instruction_list_semantics (map ip_of_ip2ts_1 lip2). *)
 
   Definition ip2ts_list_semantics2 lip2 :=
     instruction_list_semantics (map ip_of_ip2ts_2 lip2).
@@ -1680,16 +1698,22 @@ Opaque validate_one_loc.
 
 
   Unset Implicit Arguments.
-
+  Print flatten.
   Theorem validate_lst_instrs_OK nbr_global_parameters
     (lpi2: list (Polyhedral_Instruction_DTS nbr_global_parameters)):
     validate_lst_instrs lpi2 = OK () ->
     forall params lip2,
     flatten (map (expand_poly_instr_DTS params) lpi2) = lip2 ->
+    (*** 将每一个polyinstr的instr point展开到一个list中（lip2） *)
     forall mem1 mem2 lip2_sorted1,
     Permutation lip2 lip2_sorted1 ->
     Sorted (compare_IP2TS_1 time_stamp_lt) lip2_sorted1 ->
     ip2ts_list_semantics lip2_sorted1 mem1 mem2 ->
+    (** 那么，作为lip2的按时间戳字典序的两个排列， *)
+    (** lip2_sorted1 是按照旧时间戳的一个排列 *)
+    (** lip2_sorted2 是按照新时间戳的一个排列 *)
+    (** 1. 对于每一个旧时间戳的排列，都能找到（exists）一个新的时间戳的排列，两者语义一致 *)
+    (** 2. 并且新的时间戳的每一个排列，它的语义，也都和这个旧时间戳排列的语义一致 *)
     (exists lip2_sorted2 mem2',
       (Permutation lip2 lip2_sorted2 /\
       Sorted (compare_IP2TS_2 time_stamp_le) lip2_sorted2 /\

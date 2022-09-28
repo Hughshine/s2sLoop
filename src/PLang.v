@@ -208,7 +208,7 @@ Module PSemantics (Import M:BASEMEM(ZNum))
     (** each instruction point is executed in order *)
     instruction_list_semantics sorted_instruction_points mem1 mem2 ->
     poly_program_semantics_param ip_order prog params mem1 mem2.
-
+  Print Sorted.
   Definition poly_program_semantics :=
     poly_program_semantics_param instruction_point_le.
     
@@ -249,6 +249,7 @@ Module PSemantics (Import M:BASEMEM(ZNum))
       eauto.
   Qed.
 
+  Print StronglySorted.
 
   Lemma instruction_point_lt_sorted_eq: forall l1,
     StronglySorted instruction_point_lt l1 ->
@@ -293,12 +294,14 @@ Module PSemantics (Import M:BASEMEM(ZNum))
           eapply Permutation_cons_inv; eauto.
   Qed.
 
+  (** 如果不能排成全序，应该不保证语义一致吧... *)
   Theorem poly_program_semantics_lt_deterministic: forall prog params mem1 mem2 mem2',
     poly_program_semantics_param instruction_point_lt prog params mem1 mem2 ->
     poly_program_semantics_param instruction_point_lt prog params mem1 mem2' ->
     mem2 = mem2'.
   Proof.
     intros * PPS PPS'.
+    (* inv PPS. *)
     inv PPS; inv PPS'.
     assert (Vparams = Vparams0) by congruence. subst. clear dependent params.
     replace sorted_instruction_points with sorted_instruction_points0 in*.
@@ -307,6 +310,11 @@ Module PSemantics (Import M:BASEMEM(ZNum))
     assert (Permutation sorted_instruction_points sorted_instruction_points0).
       eapply transitivity. symmetry. eauto. eauto.
     symmetry in H.
+    
+    (* apply instruction_point_lt_sorted_eq. auto.
+    apply Sorted_StronglySorted. eauto.
+    unfold Relations_1.Transitive. intros; etransitivity; eauto. *)
+
     apply instruction_point_lt_sorted_eq; auto;
     apply Sorted_StronglySorted; eauto;
     unfold Relations_1.Transitive; intros; etransitivity; eauto.
