@@ -1201,7 +1201,9 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
     (loc1: Array_Id * list (ZVector dim1))
     (loc2: Array_Id * list (ZVector dim2))
     (pols_lt: list (Polyhedron (dim1 + dim2)))
-    (pols_ge: list (Polyhedron (dim1 + dim2))) : res unit :=
+    (pols_ge: list (Polyhedron (dim1 + dim2))) 
+    (** 输入的pols_lt是关于旧的schedule的，输入的pols_ge是关于新的schedule的 *)
+    : res unit :=
     let (id1, loc1) := loc1 in
     let (id2, loc2) := loc2 in
     if id1 == id2 then 
@@ -1215,6 +1217,9 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
         (fun pol_lt =>
           list_forall (fun pol_ge : Polyhedron (dim1 + dim2) =>
               pol_ge ∩ (pol_lt ∩ (sameloc ∩ pol))  ≈∅) (** iv 怎么和 sched 乘起来的？... *)
+              (** 两个指令，存在一个对相同内存地址的访问，它们最初是inst1的访问在inst2的访问之前；优化后是inst2在inst1之前. 如果这种情况存在，约束即不为空 *)
+              (** 想要检查这种情况不存在. 也就是想要保证 WAW/WAR/RAW 的先后顺序 是被维持的. （这个函数本身不判断RAR，但被用作此） *)
+              (** 写的这么复杂，就是因为字典序的表达比较复杂... *)
             pols_ge)
         (fun _ => True)
         (fun pol_lt => let pol_lt_sameloc := pol_lt ∩ sameloc_pol in
@@ -1237,7 +1242,7 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
     (loc2: Array_Id * list (ZVector dim2))
     (pols_lt: list (Polyhedron (dim1 + dim2)))
     (pols_ge: list (Polyhedron (dim1 + dim2))):
-    validate_one_loc pol loc1 loc2 pols_lt pols_ge = OK tt ->
+    validate_one_loc pol loc1 loc2 pols_lt pols_ge = OK tt -> (** validate 成功了：能保证如果这组access前后顺序有改变，那么一定不是相同内存地址的 *)
     forall v1 v2, 
       v1 +++ v2 ∈ pol ->
       Exists (fun pol_lt => v1 +++ v2 ∈ pol_lt) pols_lt ->
@@ -1298,12 +1303,6 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
       unfold translate_locs' in EQ; simpl in EQ.
       congruence.
   Qed.
-
-    
-  
-
-
-
 
   Definition params_eq nbr_global_parameters dim1 dim2 :
     Polyhedron ((S(dim1 + nbr_global_parameters)) + (S (dim2 + nbr_global_parameters))) :=
@@ -1468,14 +1467,16 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
 
 Opaque validate_one_loc.
 
-  (** 验证了的两个指令，它们的指令点，ip1.sched1 < ip2.sched1 & ip1.sched2 >= ip2.sched2 那么这两个指令点是可交换的 *)
+  (** 验证了的两个指令，它们的指令点，ip1.sched1 < ip2.sched1 & ip1.sched2 >= ip2.sched2 那么这两个指令点是可交换的；
+      因为它们不是相同内存地址的访问（validate loc access保证的）。
+  *)
   Lemma validate_two_instrs_ok nbr_global_parameters
     (pi1 pi2: Polyhedral_Instruction_DTS nbr_global_parameters):
     validate_two_instrs pi1 pi2 = OK tt ->
     forall params ip1 ip2,
       In ip1 (expand_poly_instr_DTS params pi1) ->
       In ip2 (expand_poly_instr_DTS params pi2) ->
-      (compare_IP2TS_1 time_stamp_lt) ip1 ip2 ->
+      (compare_IP2TS_1 time_stamp_lt) ip1 ip2 ->  
       (compare_IP2TS_2 time_stamp_le) ip2 ip1 ->
       ip2ts_permutable ip1 ip2.
   Proof.
