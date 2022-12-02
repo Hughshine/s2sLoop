@@ -82,6 +82,8 @@ Module Tilling (Import M:BASEMEM(ZNum))
        a * IT <= I < a * IT + a 
                    (<= a * IT + a - 1)
       【无关维度都是0】
+      a 即某维度 分块的宽度；
+      n 为旧维度的编号；
       注意，这里是domain，维度和循环的层数无关
   *)
   Fixpoint mk_constraints_tile_dims

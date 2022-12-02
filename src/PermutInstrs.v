@@ -287,7 +287,8 @@ Module Permut (Import M:BASEMEM(ZNum))
 
   Theorem two_sorted_same_semantics ipl1 ipl2:
     Permutation ipl1 ipl2 ->
-    Sorted (compare_IP2TS_1 time_stamp_lt) ipl1 ->
+    Sorted (compare_IP2TS_1 time_stamp_lt) ipl1 ->  
+    (** 不清楚一个lt一个le有什么区别；目前感觉没有区别 *)
     Sorted (compare_IP2TS_2 time_stamp_le) ipl2 ->
     (forall ip1 ip2,
       In ip1 ipl1 ->
@@ -298,7 +299,7 @@ Module Permut (Import M:BASEMEM(ZNum))
     forall mem1 mem2,
     ip2ts_list_semantics ipl1 mem1 mem2 ->
     forall mem1', mem1' ≡ mem1 ->
-    exists mem2',
+    exists mem2',  (** 这里没有强调forall *)
       ( mem2' ≡ mem2 /\
         ip2ts_list_semantics ipl2 mem1' mem2').
   Proof.
@@ -1218,8 +1219,6 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
           list_forall (fun pol_ge : Polyhedron (dim1 + dim2) =>
               pol_ge ∩ (pol_lt ∩ (sameloc ∩ pol))  ≈∅) (** iv 怎么和 sched 乘起来的？... *)
               (** 两个指令，存在一个对相同内存地址的访问，它们最初是inst1的访问在inst2的访问之前；优化后是inst2在inst1之前. 如果这种情况存在，约束即不为空 *)
-              (** 想要检查这种情况不存在. 也就是想要保证 WAW/WAR/RAW 的先后顺序 是被维持的. （这个函数本身不判断RAR，但被用作此） *)
-              (** 写的这么复杂，就是因为字典序的表达比较复杂... *)
             pols_ge)
         (fun _ => True)
         (fun pol_lt => let pol_lt_sameloc := pol_lt ∩ sameloc_pol in
@@ -1700,6 +1699,7 @@ Opaque validate_one_loc.
 
   Unset Implicit Arguments.
   Print flatten.
+  Print Sorted.
   Theorem validate_lst_instrs_OK nbr_global_parameters
     (lpi2: list (Polyhedral_Instruction_DTS nbr_global_parameters)):
     validate_lst_instrs lpi2 = OK () ->
@@ -1708,7 +1708,7 @@ Opaque validate_one_loc.
     (*** 将每一个polyinstr的instr point展开到一个list中（lip2） *)
     forall mem1 mem2 lip2_sorted1,
     Permutation lip2 lip2_sorted1 ->
-    Sorted (compare_IP2TS_1 time_stamp_lt) lip2_sorted1 ->
+    Sorted (compare_IP2TS_1 time_stamp_lt) lip2_sorted1 -> (** 这里写成lt与le，是否有区别；*)
     ip2ts_list_semantics lip2_sorted1 mem1 mem2 ->
     (** 那么，作为lip2的按时间戳字典序的两个排列， *)
     (** lip2_sorted1 是按照旧时间戳的一个排列 *)
@@ -1718,7 +1718,8 @@ Opaque validate_one_loc.
     (exists lip2_sorted2 mem2',
       (Permutation lip2 lip2_sorted2 /\
       Sorted (compare_IP2TS_2 time_stamp_le) lip2_sorted2 /\
-      ip2ts_list_semantics2 lip2_sorted2 mem1 mem2'))/\
+      ip2ts_list_semantics2 lip2_sorted2 mem1 mem2'))
+    /\
     (forall lip2_sorted2 mem2',
       Permutation lip2 lip2_sorted2 ->
       Sorted (compare_IP2TS_2 time_stamp_le) lip2_sorted2 ->
@@ -1837,6 +1838,8 @@ Opaque validate_one_loc.
       transitivity la1; auto. *)
   Admitted.
     
+
+  Search "≡".
   Inductive __no_subst__ (H: Prop) : Prop :=
     __NO_SUBST__: forall (h:H), __no_subst__ H.
 

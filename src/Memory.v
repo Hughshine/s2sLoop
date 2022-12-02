@@ -248,6 +248,11 @@ Module BMem(N:NUMERICAL) <: BASEMEM(N).
   (* Search "≡". *)
   Global Instance Equiv_smt: Equivalence same_memory_layout.
   Proof.
+  unfold same_memory_layout.
+  unfold "≡".
+  unfold EqA_mt.
+  unfold eqA_valid_cell.
+  
   constructor; unfold same_memory_layout.
   - unfold Reflexive.
     reflexivity. 
@@ -369,6 +374,11 @@ Module MEMORY (N:NUMERICAL) (BM: BASEMEM(N)).
     mem1 ≡ mem2 = (same_memory_layout mem1 mem2 /\
     forall ci, read mem1 ci = read mem2 ci).
   Proof.
+    intros.
+    unfold "≡".
+    simpl.
+    unfold eqA_memory.
+    (* unfold same_memory_layout. *)
     reflexivity.
   Qed.
 
