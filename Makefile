@@ -22,27 +22,29 @@ OCB_OPTIONS=\
 VPATH=$(DIRS)
 GPATH=$(DIRS)
 
-FCPCERT= AST.v  Axioms.v Errors.v  Floats.v  Integers.v  Maps.v \
-  Memdata.v  CompMemory.v  Memtype.v Values.v Cminor.v \
-  Events.v Globalenvs.v Smallstep.v Intv.v Ordered.v Switch.v
+FCPCERT= Axioms.v  Errors.v Integers.v  Floats.v  AST.v    Maps.v \
+  Memdata.v   Values.v Memtype.v CompMemory.v 
+#   Events.v Intv.v  Globalenvs.v  Cminor.v \
+  Smallstep.v Ordered.v Switch.v
 #  RTL.v RTLgen.v CminorSel.v Op.v Registers.v RTLgenspec.v Sets.v \
 #  RTLgenproof.v
 
-SRC= Libs.v Memory.v OtherMemory.v ArithClasses.v \
-  PolyBase.v Polyhedra.v Loops.v CeildFloord.v PLang.v\
-  PDep.v Bounds.v Instructions.v BoxedPolyhedra.v\
-  PermutInstrs.v TimeStamp.v Tilling.v ExtractPoly.v Final.v\
+SRC= CeildFloord.v ArithClasses.v Coqlib.v Coqlibext.v ClassesAndNotations.v Do_notation.v Libs.v Memory.v  ArithClasses.v \
+  PolyBase.v  Bounds.v  Polyhedra.v BoxedPolyhedra.v Instructions.v TimeStamp.v  Loops.v PLang.v\
+  PDep.v \
+   ExtractPoly.v  Tilling.v PermutInstrs.v Final.v\
   SimpleLanguage.v OCamlInterface.v
 # Coqlib.v Coqlibext.v Do_notation.v 
 
 EXTRACTION=extraction.v
 
-FILES=$(SRC) $(EXTRACTION) $(FCPCERT)
+FILES=$(FCPCERT) $(SRC) $(EXTRACTION) 
+PFILES=$(addprefix from_compcert/,$(FCPCERT)) $(addprefix src/,$(SRC)) $(addprefix extraction/,$(EXTRACTION)) 
 
 validator: driver/*.ml
 	$(OCAMLBUILD) $(OCB_OPTIONS) PrintingPprog.native
 
-proof: $(FILES:.v=.vo)
+proof: $(PFILES:.v=.vo)
 
 
 extraction: extraction.v
@@ -53,12 +55,12 @@ extraction: extraction.v
 
 .SUFFIXES: .v .vo
 
-.v.vo:
+.v.vo: $(PFILES)
 #	@rm -f doc/glob/$(*F).glob
 	@echo "COQC $*.v"
 	@$(COQC) -dump-glob /dev/null $*.v
 
-depend: $(FILES)
+depend: $(PFILES)
 	$(COQDEP) $^ \
         > .depend
 
@@ -71,6 +73,6 @@ clean:
 
 
 
-include .depend
+# include .depend
 
 FORCE:
