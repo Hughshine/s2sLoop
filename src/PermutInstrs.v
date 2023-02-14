@@ -1039,7 +1039,6 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
         (make_poly_all0_r v1 sched2' pol)
     end.
 
-  
 
   Lemma make_poly_all0_r_correct (dim1 dim2: nat)
     (sched2: list (ZVector dim2))
@@ -1196,7 +1195,10 @@ Hint Constructors time_stamp_lt_0 time_stamp_gt_0.
 
   Check list_forall_semi_dec.
   Print list_forall_semi_dec.
-    
+  
+  Print flatten.
+  Print list_forall_semi_dec.
+  (* Locate . *)
   Definition validate_one_loc {dim1 dim2}
     (pol: Polyhedron (dim1 + dim2))
     (loc1: Array_Id * list (ZVector dim1))

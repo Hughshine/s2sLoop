@@ -345,6 +345,7 @@ Qed.
    of length depth is returned, the "real" elements can be obtained by
    concatenation with the params) *)
 (** 这里其实没有给出box poly的具体定义。其实就是在尝试把全局变量和循环变量 在多面体中 区分开了，在具体的推理过程，于是可以只考虑循环遍历；全局变量的推理是简单的，可以分离开推理。*)
+
 Record Boxed_Polyhedron nbr_global_parameters depth := mk_Boxed_Polyhedron
   { bp_poly: Polyhedron (depth + nbr_global_parameters);
     bp_elts: forall params: ZVector nbr_global_parameters, list (ZVector depth);

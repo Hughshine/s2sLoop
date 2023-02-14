@@ -78,7 +78,7 @@ Module PSemantics (Import M:BASEMEM(ZNum))
       (** the depth of the instruction in the program，应该和context有关 *)
       pi_depth: nat;
       (** the Polyhedron *)
-      pi_poly: Boxed_Polyhedron nbr_global_parameters pi_depth;
+      pi_poly:  Boxed_Polyhedron nbr_global_parameters pi_depth;
       (** the schedule of the instruction *)
       pi_schedule:
         list (ZVector (S (pi_depth + nbr_global_parameters))); (** 注意，这里已经对schedule的维度做限制了。 list of vector, 其实就是矩阵... 只不过少了一层sigma type对行数的约束 *)
